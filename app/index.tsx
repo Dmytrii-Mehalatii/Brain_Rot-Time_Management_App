@@ -8,7 +8,7 @@ export default function Index() {
         justifyContent: "center",
         alignItems: "center",
       }}>
-      <Text>Hello</Text>
+      <Text className="color-primary-700">Hello</Text>
     </View>
   );
 }
