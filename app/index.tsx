@@ -1,6 +1,9 @@
-import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 import "./global.css";
+
 export default function Index() {
+  const router = useRouter();
   return (
     <View
       style={{
@@ -9,6 +12,9 @@ export default function Index() {
         alignItems: "center",
       }}>
       <Text className="color-primary-700">Hello</Text>
+      <Pressable onPress={() => router.navigate("/(tabs)/home")}>
+        <Text>Next page</Text>
+      </Pressable>
     </View>
   );
 }
