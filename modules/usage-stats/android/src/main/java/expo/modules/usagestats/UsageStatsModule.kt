@@ -1,50 +1,142 @@
 package expo.modules.usagestats
 
+import java.io.ByteArrayOutputStream
+import android.app.AppOpsManager
+import android.app.usage.UsageStats
+import android.app.usage.UsageStatsManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.provider.Settings
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.util.Base64
 import java.net.URL
 
 class UsageStatsModule : Module() {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
+
   override fun definition() = ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('UsageStats')` in JavaScript.
     Name("UsageStats")
 
-    // Defines constant property on the module.
-    Constant("PI") {
-      Math.PI
+    Function("hasPermission") {
+      val context = appContext.reactContext
+      return@Function context?.let { hasUsagePermission(it) } ?: false
     }
 
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      "Hello world! 👋"
+    Function("requestPermission") {
+      val context = appContext.reactContext ?: return@Function "no_context"
+      val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      context.startActivity(intent)
+      "permission_requested"
     }
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { value: String ->
-      // Send an event to JavaScript.
-      sendEvent("onChange", mapOf(
-        "value" to value     
-      ))
-    }
+    Function("getStats") {
+      val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
 
-    // Enables the module to be used as a native view. Definition components that are accepted as part of
-    // the view definition: Prop, Events.
-    View(UsageStatsView::class) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { view: UsageStatsView, url: URL ->
-        view.webView.loadUrl(url.toString())
+      if (!hasUsagePermission(context)) {
+        return@Function emptyList<Map<String, Any>>()
       }
-      // Defines an event that the view can send to JavaScript.
-      Events("onLoad")
+
+      return@Function getStatsInternal(context)
+    }
+
+    Function("sumTime") {
+      val context = appContext.reactContext ?: return@Function 0L 
+
+      if (!hasUsagePermission(context)) {
+        return@Function 0L
+      }
+
+      return@Function getTotalTimeInternal(context) 
     }
   }
+
+  private fun drawableToBase64(drawable: Drawable): String {
+    val bitmap = if (drawable is BitmapDrawable) {
+      drawable.bitmap
+    } else {
+      val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 96
+      val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 96
+      Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+        val canvas = Canvas(this)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+      }
+    }
+
+    val output = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
+
+    return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+  }
+
+  private fun hasUsagePermission(context: Context): Boolean {
+      val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+      val mode = appOps.checkOpNoThrow(
+          AppOpsManager.OPSTR_GET_USAGE_STATS,
+          android.os.Process.myUid(),
+          context.packageName
+      )
+      return mode == AppOpsManager.MODE_ALLOWED
+  }
+
+  private fun getTotalTimeInternal(context: Context): Long {
+    val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+        ?: return 0L
+
+    val endTime = System.currentTimeMillis()
+    val startTime = endTime - 1000L * 3600 * 24 
+
+    val stats: List<UsageStats> = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
+        ?: return 0L
+
+    val totalMs = stats.sumOf { it.totalTimeInForeground }
+    return totalMs / 1000
+}
+
+private fun getStatsInternal(context: Context): List<Map<String, Any>> {
+    val result = mutableListOf<Map<String, Any>>()
+
+    val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+      ?: return emptyList()
+
+    val endTime = System.currentTimeMillis()
+    val startTime = endTime - 1000L * 3600 * 24
+
+    val stats = usm.queryUsageStats(
+      UsageStatsManager.INTERVAL_DAILY,
+      startTime,
+      endTime
+    ) ?: return emptyList()
+
+    val pm = context.packageManager
+
+    for (usage in stats) {
+      val time = usage.totalTimeInForeground
+      if (time <= 10) continue
+
+      try {
+        val appInfo = pm.getApplicationInfo(usage.packageName, 0)
+        val appName = pm.getApplicationLabel(appInfo).toString()
+        val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
+
+        result.add(
+          mapOf(
+            "packageName" to usage.packageName,
+            "appName" to appName,
+            "seconds" to time / 1000,
+            "icon" to iconBase64
+          )
+        )
+      } catch (_: Exception) {}
+    }
+
+    return result
+  }
+
 }

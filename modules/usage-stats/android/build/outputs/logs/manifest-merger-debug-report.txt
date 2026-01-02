@@ -1,9 +1,29 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:1:1-2:12
-INJECTED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:1:1-2:12
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:1:1-14:12
+INJECTED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:1:1-14:12
 	package
 		INJECTED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:1:11-69
+uses-permission#android.permission.PACKAGE_USAGE_STATS
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:3:3-76
+	android:name
+		ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:3:20-73
+queries
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:5:5-10:15
+intent#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:6:9-9:18
+action#android.intent.action.MAIN
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:7:13-65
+	android:name
+		ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:7:21-62
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:8:13-73
+	android:name
+		ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:8:23-70
+application
+ADDED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml:12:3-13:19
 uses-sdk
 INJECTED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Komp\Brain_Rot\modules\usage-stats\android\src\main\AndroidManifest.xml

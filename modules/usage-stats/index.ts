@@ -1,5 +1,21 @@
-// Reexport the native module. On web, it will be resolved to UsageStatsModule.web.ts
-// and on native platforms to UsageStatsModule.ts
-export { default } from './src/UsageStatsModule';
-export { default as UsageStatsView } from './src/UsageStatsView';
-export * from  './src/UsageStats.types';
+import { requireNativeModule } from "expo-modules-core";
+
+const UsageStats = requireNativeModule("UsageStats");
+
+export function hasPermission(): boolean {
+  return UsageStats.hasPermission();
+}
+
+export function requestPermission(): string {
+  return UsageStats.requestPermission();
+}
+
+export function getStats(): { appName: string; seconds: number }[] {
+  return UsageStats.getStats();
+}
+
+export function getTotalTimeSpent(): number {
+  return UsageStats.getTotalTimeSpent();
+}
+
+export default UsageStats;
