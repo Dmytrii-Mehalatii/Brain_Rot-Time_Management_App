@@ -14,8 +14,11 @@ export function getStats(): { appName: string; seconds: number }[] {
   return UsageStats.getStats();
 }
 
-export function getTotalTimeSpent(): number {
-  return UsageStats.getTotalTimeSpent();
+export function getTotalTimeSpent(): {
+  formatted: string;
+  totalMinutes: number;
+} {
+  return UsageStats.sumTime();
 }
 
 export default UsageStats;

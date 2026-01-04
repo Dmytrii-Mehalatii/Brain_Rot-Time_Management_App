@@ -14,18 +14,18 @@ export default function Stats() {
     <View style={{ padding: 50 }}>
       <Text>Permission Status: {String(UsageStats.hasPermission())}</Text>
 
-      {UsageStats.hasPermission ? (
+      {/* {UsageStats.hasPermission ? (
         ""
-      ) : (
-        <Pressable onPress={() => UsageStats.requestPermission()}>
-          <Text>Open Settings</Text>
-        </Pressable>
-      )}
+      ) : ( */}
+      <Pressable onPress={() => UsageStats.requestPermission()}>
+        <Text>Open Settings</Text>
+      </Pressable>
+      {/* )} */}
 
       <Pressable onPress={handleGetStats}>
         <Text>Refresh</Text>
       </Pressable>
-      <Text>{UsageStats.sumTime()}</Text>
+      {/* <Text>{UsageStats.sumTime()}</Text> */}
 
       <FlatList
         data={stats}
@@ -37,7 +37,7 @@ export default function Stats() {
               style={{ width: 32, height: 32 }}
             />
             <Text>
-              {item.appName}: {item.seconds}m
+              {item.appName}: {item.seconds}s
             </Text>
           </View>
         )}

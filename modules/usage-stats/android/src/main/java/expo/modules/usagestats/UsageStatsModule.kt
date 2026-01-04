@@ -45,15 +45,16 @@ class UsageStatsModule : Module() {
       return@Function getStatsInternal(context)
     }
 
-    Function("sumTime") {
-      val context = appContext.reactContext ?: return@Function 0L 
+Function("sumTime") {
+    val context = appContext.reactContext ?: return@Function mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
 
-      if (!hasUsagePermission(context)) {
-        return@Function 0L
-      }
-
-      return@Function getTotalTimeInternal(context) 
+    if (!hasUsagePermission(context)) {
+        return@Function mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
     }
+
+    return@Function getTotalTimeInternal(context)
+}
+
   }
 
   private fun drawableToBase64(drawable: Drawable): String {
@@ -85,19 +86,32 @@ class UsageStatsModule : Module() {
       return mode == AppOpsManager.MODE_ALLOWED
   }
 
-  private fun getTotalTimeInternal(context: Context): Long {
+private fun getTotalTimeInternal(context: Context): Map<String, Any> {
     val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-        ?: return 0L
+        ?: return mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
 
     val endTime = System.currentTimeMillis()
-    val startTime = endTime - 1000L * 3600 * 24 
+    val startTime = endTime - 1000L * 3600 * 24
 
-    val stats: List<UsageStats> = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
-        ?: return 0L
+    val stats = usm.queryUsageStats(
+        UsageStatsManager.INTERVAL_DAILY,
+        startTime,
+        endTime
+    ) ?: return mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
 
     val totalMs = stats.sumOf { it.totalTimeInForeground }
-    return totalMs / 1000
+
+    val totalMinutes = totalMs / 1000 / 60
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+
+    val finalValueText = "${hours}h ${minutes}m"
+    return mapOf(
+        "formatted" to finalValueText,
+        "totalMinutes" to totalMinutes
+    )
 }
+
 
 private fun getStatsInternal(context: Context): List<Map<String, Any>> {
     val result = mutableListOf<Map<String, Any>>()
@@ -138,5 +152,4 @@ private fun getStatsInternal(context: Context): List<Map<String, Any>> {
 
     return result
   }
-
 }
