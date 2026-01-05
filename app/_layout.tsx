@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { UserStatsProvider } from "@/hooks/useUserStats";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import "./global.css";
@@ -14,25 +15,27 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
   return (
     <ThemeProvider>
-      <Stack>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerTitle: () => (
-              <Header
-                title="Brain Rot"
-                brainIcon={true}
-              />
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="index"
-          options={{
-            headerShadowVisible: false,
-          }}
-        />
-      </Stack>
+      <UserStatsProvider>
+        <Stack>
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerTitle: () => (
+                <Header
+                  title="Brain Rot"
+                  brainIcon={true}
+                />
+              ),
+            }}
+          />
+          <Stack.Screen
+            name="index"
+            options={{
+              headerShadowVisible: false,
+            }}
+          />
+        </Stack>
+      </UserStatsProvider>
     </ThemeProvider>
   );
 }

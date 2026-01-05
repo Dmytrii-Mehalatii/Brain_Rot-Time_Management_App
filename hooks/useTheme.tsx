@@ -23,6 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const textColor = themeColors[value];
 
   const { totalMinutes } = UsageStats.sumTime();
+
   useEffect(() => {
     if (totalMinutes <= 120) {
       setValue(1);

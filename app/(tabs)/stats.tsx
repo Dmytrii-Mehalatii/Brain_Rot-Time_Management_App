@@ -1,35 +1,16 @@
+import useUserStats from "@/hooks/useUserStats";
 import UsageStats from "@/modules/usage-stats";
-import { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
 
-type AppType = {
-  icon: string;
-  appName: string;
-  seconds: number;
-};
-
 export default function Stats() {
-  const [stats, setStats] = useState<AppType[]>([]);
-
-  const handleGetStats = () => {
-    const data = UsageStats.getStats();
-    setStats(data);
-  };
+  const { stats } = useUserStats();
 
   return (
     <View style={{ padding: 50 }}>
       <Text>Permission Status: {String(UsageStats.hasPermission())}</Text>
 
-      {/* {UsageStats.hasPermission ? (
-        ""
-      ) : ( */}
       <Pressable onPress={() => UsageStats.requestPermission()}>
         <Text>Open Settings</Text>
-      </Pressable>
-      {/* )} */}
-
-      <Pressable onPress={handleGetStats}>
-        <Text>Refresh</Text>
       </Pressable>
       {/* <Text>{UsageStats.sumTime()}</Text> */}
 

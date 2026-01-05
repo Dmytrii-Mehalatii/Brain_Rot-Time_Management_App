@@ -50,13 +50,20 @@ export default function EnemyList() {
             style={{ width: 24, height: 24, marginRight: 8 }}
           />
 
-          <Text
-            className="text-base text-start flex-shrink"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{ maxWidth: 60 }}>
-            {item.appName}
-          </Text>
+          <View className="py-1">
+            <Text
+              className="text-base text-start flex-shrink"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{ maxWidth: 60, fontFamily: "SpaceGroteskRegular" }}>
+              {item.appName}
+            </Text>
+            <Text
+              style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
+              className="text-base text-center flex-shrink">
+              {Math.round(item.seconds / 60)}m
+            </Text>
+          </View>
         </View>
       )}
     />

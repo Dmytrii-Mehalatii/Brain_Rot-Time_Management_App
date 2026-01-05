@@ -1,24 +1,12 @@
 import Battery from "@/components/Battery";
 import EnemyList from "@/components/EnemyList";
 import { useTheme } from "@/hooks/useTheme";
-import UsageStats from "@/modules/usage-stats";
-import { useEffect, useState } from "react";
+import useUserStats from "@/hooks/useUserStats";
 import { Image, Text, View } from "react-native";
 
 export default function Home() {
-  const [formatedTime, setFormatedTime] = useState(null);
-  const [timeInMinutes, setTimeInMinutes] = useState(0);
-
   const { textColor } = useTheme();
-
-  useEffect(() => {
-    async function fetchTime() {
-      const t = await UsageStats.sumTime();
-      setFormatedTime(t.formatted);
-      setTimeInMinutes(t.totalMinutes);
-    }
-    fetchTime();
-  }, []);
+  const { formatedTime, timeInMinutes } = useUserStats();
 
   const MAX_MINUTES = 540;
   const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
@@ -28,8 +16,8 @@ export default function Home() {
       <View className="h-full flex-shrink">
         <Image
           source={require("@/assets/images/brain2.png")}
-          style={{ width: "100%", height: undefined, aspectRatio: 1 }}
-          // resizeMode="contain"
+          style={{ width: "110%", height: undefined, aspectRatio: 1 }}
+          resizeMode="contain"
         />
       </View>
       <View className="w-full px-12 py-3 flex-col gap-8">
