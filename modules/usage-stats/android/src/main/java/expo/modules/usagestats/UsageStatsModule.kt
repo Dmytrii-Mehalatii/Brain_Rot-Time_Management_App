@@ -114,7 +114,7 @@ class UsageStatsModule : Module() {
       val startTime = getTodayStartTime()
 
 
-      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui", context.packageName)
+      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui")
       val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
     
       val totalMs = appDurations.filter { !blacklistedPackages.contains(it.key) }.values.sum()
@@ -128,45 +128,44 @@ class UsageStatsModule : Module() {
       )
     }
 
-    private fun getStatsInternal(context: Context): List<Map<String, Any>> {
-      val result = mutableListOf<Map<String, Any>>()
-      
-      val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()
-      
-      val endTime = System.currentTimeMillis()
-      val startTime = getTodayStartTime() 
-      
-      val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
-      
-      val pm = context.packageManager
-      val top3Packages = appDurations.entries
-          .sortedByDescending { it.value }
-          .take(3)
+private fun getStatsInternal(context: Context): List<Map<String, Any>> {
+    val result = mutableListOf<Map<String, Any>>()
+    val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()
+    val endTime = System.currentTimeMillis()
+    val startTime = getTodayStartTime() 
+    
+    val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
+    val pm = context.packageManager
 
-          val blacklistedPackages = listOf(
-            "com.google.android.googlequicksearchbox",
-            "com.android.systemui")
+    val blacklistedPackages = listOf(
+        "com.google.android.googlequicksearchbox",
+        "com.android.systemui",
+    )
 
-        for ((packageName, timeMs) in top3Packages) {
-          if (blacklistedPackages.contains(packageName)) continue
-            try {
-                val appInfo = pm.getApplicationInfo(packageName, 0)
-                val appName = pm.getApplicationLabel(appInfo).toString()
-                val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
+    val top3Packages = appDurations.entries
+        .filter { !blacklistedPackages.contains(it.key) }
+        .sortedByDescending { it.value }
+        // .take(3)
 
-                result.add(
-                    mapOf(
-                        "packageName" to packageName,
-                        "appName" to appName,
-                        "seconds" to timeMs / 1000,
-                        "icon" to iconBase64
-                    )
+    for ((packageName, timeMs) in top3Packages) {
+        try {
+            val appInfo = pm.getApplicationInfo(packageName, 0)
+            val appName = pm.getApplicationLabel(appInfo).toString()
+            val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
+
+            result.add(
+                mapOf(
+                    "packageName" to packageName,
+                    "appName" to appName,
+                    "seconds" to timeMs / 1000, // SEKUNDY
+                    "icon" to iconBase64
                 )
-            } catch (_: Exception) {}
-        }
-
-        return result
+            )
+        } catch (_: Exception) {}
     }
+
+    return result
+}
 
     private fun drawableToBase64(drawable: Drawable): String {
         val bitmap = if (drawable is BitmapDrawable) {

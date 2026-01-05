@@ -2,8 +2,14 @@ import UsageStats from "@/modules/usage-stats";
 import { useState } from "react";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
 
+type AppType = {
+  icon: string;
+  appName: string;
+  seconds: number;
+};
+
 export default function Stats() {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState<AppType[]>([]);
 
   const handleGetStats = () => {
     const data = UsageStats.getStats();
@@ -49,7 +55,7 @@ export default function Stats() {
               style={{ width: 32, height: 32 }}
             />
             <Text>
-              {item.appName}: {item.seconds}s
+              {item.appName}: {item.seconds / 60}s
             </Text>
           </View>
         )}

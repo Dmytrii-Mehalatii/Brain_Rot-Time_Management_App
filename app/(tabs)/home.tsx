@@ -6,17 +6,22 @@ import { useEffect, useState } from "react";
 import { Image, Text, View } from "react-native";
 
 export default function Home() {
-  const [time, setTime] = useState(null);
+  const [formatedTime, setFormatedTime] = useState(null);
+  const [timeInMinutes, setTimeInMinutes] = useState(0);
 
-  const { value, textColor } = useTheme();
-  console.log(value);
+  const { textColor } = useTheme();
+
   useEffect(() => {
     async function fetchTime() {
       const t = await UsageStats.sumTime();
-      setTime(t.formatted);
+      setFormatedTime(t.formatted);
+      setTimeInMinutes(t.totalMinutes);
     }
     fetchTime();
   }, []);
+
+  const MAX_MINUTES = 540;
+  const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
 
   return (
     <View className="flex-1 justify-center py-10 items-center">
@@ -35,7 +40,7 @@ export default function Home() {
             <Text
               style={{ color: textColor }}
               className="w-full text-center lowercase ">
-              {time}
+              {formatedTime}
             </Text>{" "}
             wasted today
           </Text>
@@ -47,7 +52,7 @@ export default function Home() {
               Your Brain is{" "}
               <Text
                 style={{ fontFamily: "SpaceGroteskBold", color: textColor }}>
-                75%
+                {Math.round(baseFreshness * 100)}%
               </Text>{" "}
               fresh
             </Text>
@@ -59,7 +64,7 @@ export default function Home() {
             <Text
               className="w-full flex-shrink text-xl"
               style={{ fontFamily: "SpaceGroteskRegular" }}>
-              Today's Biggest Enemies:{" "}
+              Todays Biggest Enemies:{" "}
             </Text>
             <Text
               style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}

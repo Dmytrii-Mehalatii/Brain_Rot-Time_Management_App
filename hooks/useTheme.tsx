@@ -12,9 +12,9 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const themeColors: Record<number, string> = {
     1: "#9D1344",
-    2: "#BD446F",
-    3: "#D993AC",
-    4: "#BBDBB4",
+    2: "#D993AC",
+    3: "#BBDBB4",
+    4: "#AAC7A4",
     5: "#859B80",
     6: "#677863",
   };
@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [value, setValue] = useState(1);
   const textColor = themeColors[value];
 
-  const { formatted, totalMinutes } = UsageStats.sumTime();
+  const { totalMinutes } = UsageStats.sumTime();
   useEffect(() => {
     if (totalMinutes <= 120) {
       setValue(1);
