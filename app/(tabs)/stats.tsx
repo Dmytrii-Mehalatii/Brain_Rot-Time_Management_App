@@ -30,8 +30,20 @@ export default function Stats() {
       <FlatList
         data={stats}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View>
+        renderItem={({ item, index }) => (
+          <View
+            style={{
+              borderWidth: 2,
+              marginTop: 8,
+              borderColor:
+                index < 1
+                  ? "#730031"
+                  : index === 1
+                    ? "#AD154B"
+                    : index === 2
+                      ? "#D993AC"
+                      : "#212121",
+            }}>
             <Image
               source={{ uri: `data:image/png;base64,${item.icon}` }}
               style={{ width: 32, height: 32 }}

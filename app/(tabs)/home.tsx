@@ -1,4 +1,5 @@
 import Battery from "@/components/Battery";
+import EnemyList from "@/components/EnemyList";
 import { useTheme } from "@/hooks/useTheme";
 import UsageStats from "@/modules/usage-stats";
 import { useEffect, useState } from "react";
@@ -67,11 +68,7 @@ export default function Home() {
             </Text>
           </View>
 
-          <View className="w-full flex-row h-12 gap-3">
-            <View className="w-full flex-shrink border-[1.5px] h-full rounded-md"></View>
-            <View className="w-full flex-shrink  border-[1.5px] h-full rounded-md"></View>
-            <View className="w-full flex-shrink border-[1.5px] h-full rounded-md"></View>
-          </View>
+          <EnemyList />
         </View>
       </View>
     </View>
