@@ -7,9 +7,10 @@ import {
   useState,
 } from "react";
 
-type AppType = {
+export type AppType = {
   icon: string;
   appName: string;
+  appIndex: number;
   seconds: number;
 };
 

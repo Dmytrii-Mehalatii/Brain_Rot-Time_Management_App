@@ -16,7 +16,7 @@ export default function Stats() {
 
       <FlatList
         data={stats}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }) => (
           <View
             style={{

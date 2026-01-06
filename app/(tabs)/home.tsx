@@ -1,18 +1,28 @@
 import Battery from "@/components/Battery";
 import EnemyList from "@/components/EnemyList";
+import EnemyModal from "@/components/EnemyModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
-import { Image, Text, View } from "react-native";
+import { useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 
 export default function Home() {
   const { textColor } = useTheme();
   const { formatedTime, timeInMinutes } = useUserStats();
+
+  const [isVisible, setIsVisible] = useState(false);
 
   const MAX_MINUTES = 540;
   const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
 
   return (
     <View className="flex-1 justify-center py-10 items-center">
+      {isVisible && (
+        <EnemyModal
+          isVisible={isVisible}
+          setIsVisible={setIsVisible}
+        />
+      )}
       <View className="h-full flex-shrink">
         <Image
           source={require("@/assets/images/brain2.png")}
@@ -54,11 +64,13 @@ export default function Home() {
               style={{ fontFamily: "SpaceGroteskRegular" }}>
               Todays Biggest Enemies:{" "}
             </Text>
-            <Text
-              style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
-              className="underline">
-              see more
-            </Text>
+            <Pressable onPress={() => setIsVisible(true)}>
+              <Text
+                style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
+                className="underline">
+                see more
+              </Text>
+            </Pressable>
           </View>
 
           <EnemyList />

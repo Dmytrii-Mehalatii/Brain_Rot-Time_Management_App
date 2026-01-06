@@ -10,7 +10,11 @@ export function requestPermission(): string {
   return UsageStats.requestPermission();
 }
 
-export function getStats(): { appName: string; seconds: number }[] {
+export function getStats(): {
+  appName: string;
+  appIndex: number;
+  seconds: number;
+}[] {
   return UsageStats.getStats();
 }
 

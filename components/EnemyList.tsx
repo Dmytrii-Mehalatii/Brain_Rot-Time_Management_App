@@ -1,24 +1,11 @@
 import { useTheme } from "@/hooks/useTheme";
-import UsageStats from "@/modules/usage-stats";
-import { useEffect, useState } from "react";
+import useUserStats from "@/hooks/useUserStats";
 import { FlatList, Image, Text, View } from "react-native";
 
-type AppType = {
-  icon: string;
-  appName: string;
-  seconds: number;
-};
-
 export default function EnemyList() {
-  const [stats, setStats] = useState<AppType[]>([]);
   const { value, textColor } = useTheme();
-  useEffect(() => {
-    async function fetchTime() {
-      const data = UsageStats.getStats();
-      setStats(data);
-    }
-    fetchTime();
-  }, []);
+
+  const { stats } = useUserStats();
   return (
     <FlatList
       horizontal

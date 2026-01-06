@@ -114,7 +114,7 @@ class UsageStatsModule : Module() {
       val startTime = getTodayStartTime()
 
 
-      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui")
+      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui", "com.google.android.googlesdksetup")
       val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
     
       val totalMs = appDurations.filter { !blacklistedPackages.contains(it.key) }.values.sum()
@@ -140,6 +140,7 @@ private fun getStatsInternal(context: Context): List<Map<String, Any>> {
     val blacklistedPackages = listOf(
         "com.google.android.googlequicksearchbox",
         "com.android.systemui",
+        "com.google.android.googlesdksetup"
     )
 
     val top3Packages = appDurations.entries
@@ -147,6 +148,7 @@ private fun getStatsInternal(context: Context): List<Map<String, Any>> {
         .sortedByDescending { it.value }
         // .take(3)
 
+    var displayedRank = 1 
     for ((packageName, timeMs) in top3Packages) {
         try {
             val appInfo = pm.getApplicationInfo(packageName, 0)
@@ -156,12 +158,15 @@ private fun getStatsInternal(context: Context): List<Map<String, Any>> {
             result.add(
                 mapOf(
                     "packageName" to packageName,
+                    "appIndex" to displayedRank,
                     "appName" to appName,
-                    "seconds" to timeMs / 1000, // SEKUNDY
+                    "seconds" to timeMs / 1000,
                     "icon" to iconBase64
                 )
             )
-        } catch (_: Exception) {}
+            displayedRank++ 
+        } catch (_: Exception) {
+        }
     }
 
     return result
