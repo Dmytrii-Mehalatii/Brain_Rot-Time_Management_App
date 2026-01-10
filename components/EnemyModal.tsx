@@ -1,15 +1,8 @@
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats, { AppType } from "@/hooks/useUserStats";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import {
-  Dimensions,
-  FlatList,
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
 
 type Props = {
   isVisible: boolean;
@@ -20,12 +13,9 @@ export default function EnemyModal({ isVisible, setIsVisible }: Props) {
   const { stats } = useUserStats();
   const { textColor } = useTheme();
 
-  //   const minutes = stats / 60;
   const swapedArray = [...stats.slice(0, 3)];
   [swapedArray[0], swapedArray[1]] = [swapedArray[1], swapedArray[0]];
 
-  const innerViewWidth = Dimensions.get("window").width - 80;
-  const itemWidth = innerViewWidth / 3;
   return (
     <Modal
       animationType="slide"
@@ -109,28 +99,50 @@ export default function EnemyModal({ isVisible, setIsVisible }: Props) {
 
           <View className="bg-black h-[1px] my-6" />
 
-          <FlatList
-            data={stats.slice(3)}
-            renderItem={({ item, index }) => {
-              const totalMinutes = Math.round(item.seconds / 60);
-              const hours = Math.floor(totalMinutes / 60);
-              const minutes = totalMinutes % 60;
-              return (
-                <View className="flex-row items-center h-12">
-                  <Text>{item.appIndex}</Text>
-                  <Image
-                    source={{ uri: `data:image/png;base64,${item.icon}` }}
-                    style={{ width: 24, height: 24 }}
-                  />
-                  <Text className="w-full flex-shrink">{item.appName}</Text>
+          <View className="max-h-[328px] overflow-hidden">
+            <FlatList
+              data={stats.slice(3)}
+              renderItem={({ item }) => {
+                const totalMinutes = Math.round(item.seconds / 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                return (
+                  <View className="flex-row items-center h-fit py-4 border-b-gray-300 border-b-[1px] mb-2">
+                    <Text className="font-['SpaceGroteskMedium'] mr-3">
+                      {item.appIndex}
+                    </Text>
+                    <Image
+                      source={{ uri: `data:image/png;base64,${item.icon}` }}
+                      style={{ width: 24, height: 24 }}
+                    />
+                    <Text
+                      className="w-full mx-3 flex-shrink font-['SpaceGroteskRegular']"
+                      numberOfLines={1}>
+                      {item.appName}
+                    </Text>
 
-                  <Text>
-                    {hours}h {minutes}m
-                  </Text>
-                </View>
-              );
-            }}
-          />
+                    <Text
+                      style={{
+                        fontFamily: "SpaceGroteskMedium",
+                        color: textColor,
+                      }}>
+                      {hours}h {minutes}m
+                    </Text>
+                  </View>
+                );
+              }}
+            />
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.05)"]}
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 40,
+              }}
+            />
+          </View>
         </View>
       </View>
     </Modal>

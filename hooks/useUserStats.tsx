@@ -46,6 +46,16 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
     handleGetStats();
     handleGetFormatedTime();
     handleGetTimeInMinutes();
+
+    const interval = setInterval(handleGetStats, 30_000);
+    const intervalTwo = setInterval(handleGetStats, 30_000);
+    const intervalThree = setInterval(handleGetStats, 30_000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(intervalTwo);
+      clearInterval(intervalThree);
+    };
   }, []);
 
   return (
