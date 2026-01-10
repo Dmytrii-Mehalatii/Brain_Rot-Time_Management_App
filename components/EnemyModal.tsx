@@ -1,9 +1,9 @@
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats, { AppType } from "@/hooks/useUserStats";
+import useUserStats from "@/hooks/useUserStats";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect } from "react";
-import { FlatList, Image, Modal, Pressable, Text, View } from "react-native";
+import { Image, Modal, Pressable, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -15,6 +15,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import CustomFlatList from "./customFlatList";
 type Props = {
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
@@ -86,110 +87,97 @@ export default function EnemyModal({ isVisible, setIsVisible }: Props) {
                 </View>
 
                 <View className="items-center mt-5 h-fit">
-                  <FlatList
+                  <CustomFlatList
                     data={swapedArray}
-                    horizontal
-                    scrollEnabled={false}
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={(_, index) => index.toString()}
-                    renderItem={({ item }: { item: AppType }) => {
-                      const totalMinutes = Math.round(item.seconds / 60);
-                      const hours = Math.floor(totalMinutes / 60);
-                      const minutes = totalMinutes % 60;
-
-                      return (
-                        <View
-                          style={{
-                            marginTop:
-                              item.appIndex === 2 || item.appIndex === 3
-                                ? 32
-                                : 0,
-                          }}
-                          className="items-center w-[108px] ">
-                          <Text
-                            numberOfLines={2}
-                            ellipsizeMode="tail"
-                            style={{ fontFamily: "SpaceGroteskMedium" }}
-                            className="text-center text-base mb-1">
-                            <Text
-                              style={{
-                                fontFamily: "SpaceGroteskBold",
-                                color: textColor,
-                              }}
-                              className="text-lg">
-                              {item.appIndex}
-                            </Text>{" "}
-                            {item.appIndex === 1
-                              ? "Final Boss"
-                              : item.appIndex === 2
-                                ? "Brain Melter"
-                                : "Time Eater"}
-                          </Text>
-
-                          <Image
-                            source={{
-                              uri: `data:image/png;base64,${item.icon}`,
-                            }}
-                            style={{
-                              width: 48,
-                              height: 48,
-                              marginVertical: 8,
-                            }}
-                          />
-
+                    isHorizontal={true}
+                    isScrollEnabled={false}
+                    renderItem={(item, { hours, minutes }) => (
+                      <View
+                        style={{
+                          marginTop:
+                            item.appIndex === 2 || item.appIndex === 3 ? 32 : 0,
+                        }}
+                        className="items-center w-[108px] ">
+                        <Text
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                          style={{ fontFamily: "SpaceGroteskMedium" }}
+                          className="text-center text-base mb-1">
                           <Text
                             style={{
-                              fontFamily: "SpaceGroteskRegular",
+                              fontFamily: "SpaceGroteskBold",
                               color: textColor,
                             }}
-                            className="text-center font-bold mt-1">
-                            {hours > 0 ? `${hours}h ` : ""}
-                            {minutes}m
-                          </Text>
-                        </View>
-                      );
-                    }}
+                            className="text-lg">
+                            {item.appIndex}
+                          </Text>{" "}
+                          {item.appIndex === 1
+                            ? "Final Boss"
+                            : item.appIndex === 2
+                              ? "Brain Melter"
+                              : "Time Eater"}
+                        </Text>
+
+                        <Image
+                          source={{
+                            uri: `data:image/png;base64,${item.icon}`,
+                          }}
+                          style={{
+                            width: 48,
+                            height: 48,
+                            marginVertical: 8,
+                          }}
+                        />
+
+                        <Text
+                          style={{
+                            fontFamily: "SpaceGroteskRegular",
+                            color: textColor,
+                          }}
+                          className="text-center font-bold mt-1">
+                          {hours > 0 ? `${hours}h ` : ""}
+                          {minutes}m
+                        </Text>
+                      </View>
+                    )}
                   />
                 </View>
               </View>
             </GestureDetector>
+
             <View className="bg-black h-[1px] my-6" />
 
             <View className="max-h-[328px] overflow-hidden">
-              <FlatList
+              <CustomFlatList
+                isHorizontal={false}
+                isScrollEnabled={true}
                 data={stats.slice(3)}
-                nestedScrollEnabled
-                renderItem={({ item }) => {
-                  const totalMinutes = Math.round(item.seconds / 60);
-                  const hours = Math.floor(totalMinutes / 60);
-                  const minutes = totalMinutes % 60;
-                  return (
-                    <View className="flex-row items-center h-fit py-4 border-b-gray-300 border-b-[1px] mb-2">
-                      <Text className="font-['SpaceGroteskMedium'] mr-3">
-                        {item.appIndex}
-                      </Text>
-                      <Image
-                        source={{
-                          uri: `data:image/png;base64,${item.icon}`,
-                        }}
-                        style={{ width: 28, height: 28 }}
-                      />
-                      <Text
-                        className="w-full mx-3 flex-shrink font-['SpaceGroteskRegular']"
-                        numberOfLines={1}>
-                        {item.appName}
-                      </Text>
+                renderItem={(item, { hours, minutes }) => (
+                  <View className="flex-row items-center h-fit py-4 border-b-gray-300 border-b-[1px] mb-2">
+                    <Text className="font-['SpaceGroteskMedium'] mr-3">
+                      {item.appIndex}
+                    </Text>
+                    <Image
+                      source={{
+                        uri: `data:image/png;base64,${item.icon}`,
+                      }}
+                      style={{ width: 28, height: 28 }}
+                    />
+                    <Text
+                      className="w-full mx-3 flex-shrink font-['SpaceGroteskRegular']"
+                      numberOfLines={1}>
+                      {item.appName}
+                    </Text>
 
-                      <Text
-                        style={{
-                          fontFamily: "SpaceGroteskMedium",
-                          color: textColor,
-                        }}>
-                        {hours}h {minutes}m
-                      </Text>
-                    </View>
-                  );
-                }}
+                    <Text
+                      style={{
+                        fontFamily: "SpaceGroteskMedium",
+                        color: textColor,
+                      }}>
+                      {hours}h {minutes}m
+                    </Text>
+                  </View>
+                )}
               />
               <LinearGradient
                 colors={["transparent", "rgba(0,0,0,0.05)"]}
