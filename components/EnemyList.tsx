@@ -16,7 +16,7 @@ export default function EnemyList() {
       className="h-14"
       renderItem={({ item, index }) => (
         <View
-          className="w-[104px] h-full mr-2 px-2 flex-row items-center justify-start rounded-md"
+          className="w-[104px] h-full mr-2 px-2 flex-row items-center justify-center rounded-md"
           style={{
             borderWidth: 2,
             borderColor:
@@ -34,12 +34,12 @@ export default function EnemyList() {
           }}>
           <Image
             source={{ uri: `data:image/png;base64,${item.icon}` }}
-            style={{ width: 24, height: 24, marginRight: 8 }}
+            style={{ width: 24, height: 24 }}
           />
 
-          <View className="py-1">
+          <View className="py-1 flex w-full flex-shrink">
             <Text
-              className="text-base text-start flex-shrink"
+              className="text-base text-center flex-shrink"
               numberOfLines={1}
               ellipsizeMode="tail"
               style={{ maxWidth: 60, fontFamily: "SpaceGroteskRegular" }}>
@@ -47,7 +47,7 @@ export default function EnemyList() {
             </Text>
             <Text
               style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
-              className="text-base text-center flex-shrink">
+              className="text-base w-full text-center flex-shrink">
               {Math.round(item.seconds / 60)}m
             </Text>
           </View>
