@@ -20,7 +20,7 @@ export default function EnemyList() {
         data={stats.slice(0, 3)}
         isHorizontal={true}
         isScrollEnabled={false}
-        renderItem={(item, { minutes }) => (
+        renderItem={(item, { hours, minutes }) => (
           <View
             className="w-[104px] h-full mr-2 px-2 flex-row items-center justify-center rounded-md"
             style={{
@@ -43,6 +43,7 @@ export default function EnemyList() {
               <Text
                 style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
                 className="text-base w-full text-center flex-shrink">
+                {hours > 0 ? hours + "h " : ""}
                 {minutes}m
               </Text>
             </View>
