@@ -33,6 +33,10 @@ export default function WhatIf() {
           type="creativity"
           title="Creativity:"
         />
+        <CardGroup
+          type="universal"
+          title="Universal:"
+        />
       </ScrollView>
     </View>
   );
