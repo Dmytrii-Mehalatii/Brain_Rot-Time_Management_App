@@ -12,7 +12,6 @@ export default function Stats() {
       <Pressable onPress={() => UsageStats.requestPermission()}>
         <Text>Open Settings</Text>
       </Pressable>
-      {/* <Text>{UsageStats.sumTime()}</Text> */}
 
       <FlatList
         data={stats}

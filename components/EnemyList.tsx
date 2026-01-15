@@ -1,7 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { Image, Text, View } from "react-native";
-import CustomFlatList from "./customFlatList";
+import CustomFlatList from "./CustomFlatList";
 
 export default function EnemyList() {
   const { value, textColor } = useTheme();

@@ -14,8 +14,10 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.content.pm.ApplicationInfo
 import android.util.Base64
 import java.util.Calendar
+import org.json.JSONObject
 
 class UsageStatsModule : Module() {
 
@@ -128,49 +130,86 @@ class UsageStatsModule : Module() {
       )
     }
 
-private fun getStatsInternal(context: Context): List<Map<String, Any>> {
-    val result = mutableListOf<Map<String, Any>>()
-    val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()
-    val endTime = System.currentTimeMillis()
-    val startTime = getTodayStartTime() 
-    
-    val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
-    val pm = context.packageManager
-
-    val blacklistedPackages = listOf(
-        "com.google.android.googlequicksearchbox",
-        "com.android.systemui",
-        "com.google.android.googlesdksetup"
-    )
-
-    val top3Packages = appDurations.entries
-        .filter { !blacklistedPackages.contains(it.key) }
-        .sortedByDescending { it.value }
-        // .take(3)
-
-    var displayedRank = 1 
-    for ((packageName, timeMs) in top3Packages) {
+    private fun getManualCategories(context: Context): Map<String, String> {
+        val map = mutableMapOf<String, String>()
         try {
-            val appInfo = pm.getApplicationInfo(packageName, 0)
-            val appName = pm.getApplicationLabel(appInfo).toString()
-            val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
-
-            result.add(
-                mapOf(
-                    "packageName" to packageName,
-                    "appIndex" to displayedRank,
-                    "appName" to appName,
-                    "seconds" to timeMs / 1000,
-                    "icon" to iconBase64
-                )
-            )
-            displayedRank++ 
-        } catch (_: Exception) {
+            val jsonString = context.assets.open("app_categories.json").bufferedReader().use { it.readText() }
+            val jsonObject = JSONObject(jsonString)
+            jsonObject.keys().forEach { key ->
+                map[key] = jsonObject.getString(key)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+        return map
     }
 
-    return result
-}
+    private fun getCategoryString(category: Int): String {
+        return when (category) {
+            ApplicationInfo.CATEGORY_GAME -> "Game"
+            ApplicationInfo.CATEGORY_AUDIO -> "Audio"
+            ApplicationInfo.CATEGORY_VIDEO -> "Video"
+            ApplicationInfo.CATEGORY_IMAGE -> "Image"
+            ApplicationInfo.CATEGORY_SOCIAL -> "Social"
+            ApplicationInfo.CATEGORY_NEWS -> "News"
+            ApplicationInfo.CATEGORY_MAPS -> "Maps"
+            ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
+            ApplicationInfo.CATEGORY_ACCESSIBILITY -> "Accessibility"
+            else -> "Undefined" 
+        }
+    }
+    
+    private fun getStatsInternal(context: Context): List<Map<String, Any>> {
+        val result = mutableListOf<Map<String, Any>>()
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()
+        val manualMap = getManualCategories(context) 
+        
+        val endTime = System.currentTimeMillis()
+        val startTime = getTodayStartTime() 
+        val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
+        val pm = context.packageManager
+
+        val blacklistedPackages = listOf(
+            "com.google.android.googlequicksearchbox",
+            "com.android.systemui",
+            "com.google.android.googlesdksetup"
+        )
+
+        val sortedPackages = appDurations.entries
+            .filter { !blacklistedPackages.contains(it.key) }
+            .sortedByDescending { it.value }
+
+        var displayedRank = 1 
+        for ((packageName, timeMs) in sortedPackages) {
+            try {
+                val appInfo = pm.getApplicationInfo(packageName, 0)
+                val appName = pm.getApplicationLabel(appInfo).toString()
+                val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
+
+                val categoryName = manualMap[packageName] ?: run {
+                    val categoryId = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        appInfo.category
+                    } else {
+                        -1
+                    }
+                    getCategoryString(categoryId) 
+                }
+
+                result.add(
+                    mapOf(
+                        "packageName" to packageName,
+                        "appIndex" to displayedRank,
+                        "appName" to appName,
+                        "category" to categoryName,
+                        "seconds" to timeMs / 1000,
+                        "icon" to iconBase64
+                    )
+                )
+                displayedRank++ 
+            } catch (_: Exception) {}
+        }
+        return result
+    }
 
     private fun drawableToBase64(drawable: Drawable): String {
         val bitmap = if (drawable is BitmapDrawable) {

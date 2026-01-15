@@ -13,6 +13,7 @@ export function requestPermission(): string {
 export function getStats(): {
   appName: string;
   appIndex: number;
+  category: string;
   seconds: number;
 }[] {
   return UsageStats.getStats();

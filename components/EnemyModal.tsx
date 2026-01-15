@@ -15,7 +15,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import CustomFlatList from "./customFlatList";
+import CustomFlatList from "./CustomFlatList";
 type Props = {
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
