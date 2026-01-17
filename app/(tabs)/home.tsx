@@ -1,6 +1,8 @@
 import Battery from "@/components/Battery";
+import BrainMapModal from "@/components/BrainMapModal";
 import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
+import { useBrainMap } from "@/hooks/useBrainMap";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { useState } from "react";
@@ -10,19 +12,23 @@ export default function Home() {
   const { textColor } = useTheme();
   const { formatedTime, timeInMinutes } = useUserStats();
 
-  const [isVisible, setIsVisible] = useState(false);
+  const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
+  const { isBrainModalVisible } = useBrainMap();
 
   const MAX_MINUTES = 540;
   const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
 
   return (
     <View className="flex-1 justify-center py-10 items-center">
-      {isVisible && (
+      {isEnemiesModalVisible && (
         <EnemyModal
-          isVisible={isVisible}
-          setIsVisible={setIsVisible}
+          isVisible={isEnemiesModalVisible}
+          setIsVisible={setIsEnemiesModalVisible}
         />
       )}
+
+      {isBrainModalVisible && <BrainMapModal />}
+
       <View className="h-full flex-shrink">
         <Image
           source={require("@/assets/images/brain2.png")}
@@ -64,7 +70,7 @@ export default function Home() {
               style={{ fontFamily: "SpaceGroteskRegular" }}>
               Todays Biggest Enemies:{" "}
             </Text>
-            <Pressable onPress={() => setIsVisible(true)}>
+            <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
               <Text
                 style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
                 className="underline">

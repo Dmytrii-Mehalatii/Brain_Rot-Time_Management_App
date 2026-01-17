@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import BrainMapProvider from "@/hooks/useBrainMap";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { UserStatsProvider } from "@/hooks/useUserStats";
 import { useFonts } from "expo-font";
@@ -16,25 +17,27 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <UserStatsProvider>
-        <Stack>
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerTitle: () => (
-                <Header
-                  title="Brain Rot"
-                  brainIcon={true}
-                />
-              ),
-            }}
-          />
-          <Stack.Screen
-            name="index"
-            options={{
-              headerShadowVisible: false,
-            }}
-          />
-        </Stack>
+        <BrainMapProvider>
+          <Stack>
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerTitle: () => (
+                  <Header
+                    title="Brain Rot"
+                    brainIcon={true}
+                  />
+                ),
+              }}
+            />
+            <Stack.Screen
+              name="index"
+              options={{
+                headerShadowVisible: false,
+              }}
+            />
+          </Stack>
+        </BrainMapProvider>
       </UserStatsProvider>
     </ThemeProvider>
   );

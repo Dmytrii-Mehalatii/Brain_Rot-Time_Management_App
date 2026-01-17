@@ -1,6 +1,7 @@
 import BrainIcon from "@/assets/icons/brain_icon.svg";
 import Calendar from "@/assets/icons/calendar.svg";
-import { Text, View } from "react-native";
+import { useBrainMap } from "@/hooks/useBrainMap";
+import { Pressable, Text, View } from "react-native";
 
 type HeaderProps = {
   title: string;
@@ -8,6 +9,7 @@ type HeaderProps = {
 };
 
 export default function Header({ title, brainIcon }: HeaderProps) {
+  const { setIsBrainModalVisible } = useBrainMap();
   return (
     <View className="flex-1 flex-row gap-5 px-5">
       <Text
@@ -21,11 +23,13 @@ export default function Header({ title, brainIcon }: HeaderProps) {
         color="212121"
       />
       {brainIcon && (
-        <BrainIcon
-          color="#212121"
-          width={32}
-          height={32}
-        />
+        <Pressable onPress={() => setIsBrainModalVisible((prev) => !prev)}>
+          <BrainIcon
+            color="#212121"
+            width={32}
+            height={32}
+          />
+        </Pressable>
       )}
     </View>
   );
