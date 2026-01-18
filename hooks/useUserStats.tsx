@@ -68,7 +68,7 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
 export default function useUserStats() {
   const ctx = useContext(UserStatsContext);
   if (!ctx) {
-    throw new Error("useTheme must be used within useThemeProvider");
+    throw new Error("useUserStats must be used within UserStatsProvider");
   }
   return ctx;
 }
