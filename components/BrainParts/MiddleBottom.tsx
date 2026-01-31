@@ -4,12 +4,14 @@ import Svg, { Path } from "react-native-svg";
 export default function MiddleBottomBrain({
   color1 = "#AD154A",
   color2 = "#BD446F",
+  width = "1101",
+  height = "390",
   ...props
 }) {
   return (
     <Svg
-      width={1101}
-      height={390}
+      width={width}
+      height={height}
       viewBox="0 0 1101 390"
       {...props}>
       <Path

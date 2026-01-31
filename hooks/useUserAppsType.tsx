@@ -6,12 +6,17 @@ type AppDetails = {
   time: number;
 };
 
+type BrainPart = {
+  time: number;
+  type: "Health and Productivity" | "Social & News" | "Video & Audio" | "Games";
+};
+
 type UserAppsType = {
   appData: AppDetails[];
-  topBrainPart: number;
-  secondBrainPart: number;
-  thirdBrainPart: number;
-  bottomBrainPart: number;
+  topBrainPart: BrainPart;
+  secondBrainPart: BrainPart;
+  thirdBrainPart: BrainPart;
+  bottomBrainPart: BrainPart;
 };
 
 const UserAppsContext = createContext<UserAppsType | null>(null);
@@ -68,11 +73,23 @@ export default function UserAppsProvider({
 
     return {
       appData: formattedAppData,
-      topBrainPart: topValue / 60,
-      secondBrainPart: secondValue / 60,
-      thirdBrainPart: thirdValue / 60,
-      bottomBrainPart: lastValue / 60,
-    };
+      topBrainPart: {
+        time: Math.round(topValue / 60),
+        type: "Health and Productivity" as const,
+      },
+      secondBrainPart: {
+        time: Math.round(secondValue / 60),
+        type: "Social & News" as const,
+      },
+      thirdBrainPart: {
+        time: Math.round(thirdValue / 60),
+        type: "Video & Audio" as const,
+      },
+      bottomBrainPart: {
+        time: Math.round(lastValue / 60),
+        type: "Games" as const,
+      },
+    } as UserAppsType;
   }, [stats]);
 
   return (

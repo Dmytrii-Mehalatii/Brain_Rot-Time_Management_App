@@ -8,9 +8,9 @@ export default function BottomBrain({
 }) {
   return (
     <Svg
-      width="1004"
-      height="329"
-      viewBox="0 0 1004 329"
+      width="100"
+      height="150"
+      viewBox="0 0 1010 492"
       {...props}>
       <Path
         fill={color1}
