@@ -1,3 +1,4 @@
+import { getFunnyQuote } from "@/hooks/quoteProvider";
 import { useBrainMap } from "@/hooks/useBrainMap";
 import { useUserApps } from "@/hooks/useUserAppsType";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -21,6 +22,27 @@ export default function BrainMapModal() {
     | "bottomBrainPart"
     | ""
   >("");
+
+  const activePart = useMemo(() => {
+    switch (brainPart) {
+      case "topBrainPart":
+        return topBrainPart;
+      case "secondBrainPart":
+        return secondBrainPart;
+      case "thirdBrainPart":
+        return thirdBrainPart;
+      case "bottomBrainPart":
+        return bottomBrainPart;
+      default:
+        return null;
+    }
+  }, [
+    brainPart,
+    topBrainPart,
+    secondBrainPart,
+    thirdBrainPart,
+    bottomBrainPart,
+  ]);
 
   function getBrainPartColor(value: number) {
     if (value < 60) return ["#d65181", "#ad144a"];
@@ -75,7 +97,10 @@ export default function BrainMapModal() {
                 setBrainPart("topBrainPart");
                 setInfoBrainPartState(true);
               }}
-              className="absolute w-full left-0 top-16 h-20 ">
+              className="absolute w-full left-0 top-16 h-20 "
+              style={{
+                transform: [{ scale: brainPart === "topBrainPart" ? 1.1 : 1 }],
+              }}>
               <TopBrain
                 width="100%"
                 height="90%"
@@ -88,7 +113,12 @@ export default function BrainMapModal() {
                 setInfoBrainPartState(true);
               }}
               className="absolute w-full left-0 h-20"
-              style={{ top: 110 }}>
+              style={{
+                top: 110,
+                transform: [
+                  { scale: brainPart === "secondBrainPart" ? 1.1 : 1 },
+                ],
+              }}>
               <MiddleTopBrain
                 width="100%"
                 height="100%"
@@ -103,7 +133,12 @@ export default function BrainMapModal() {
                 setBrainPart("thirdBrainPart");
               }}
               className="absolute w-full left-0 h-20"
-              style={{ top: 160 }}>
+              style={{
+                top: 160,
+                transform: [
+                  { scale: brainPart === "thirdBrainPart" ? 1.1 : 1 },
+                ],
+              }}>
               <MiddleBottomBrain
                 width="100%"
                 height="104%"
@@ -118,7 +153,12 @@ export default function BrainMapModal() {
                 setBrainPart("bottomBrainPart");
               }}
               className="absolute w-full left-0  h-20"
-              style={{ top: 200 }}>
+              style={{
+                top: 200,
+                transform: [
+                  { scale: brainPart === "bottomBrainPart" ? 1.1 : 1 },
+                ],
+              }}>
               <BottomBrain
                 width="100%"
                 height="150%"
@@ -155,61 +195,30 @@ export default function BrainMapModal() {
                     <Text className="text-primary-700">brain part</Text> to see
                     more
                   </Text>
-                ) : brainPart === "topBrainPart" ? (
-                  <View className="py-2 gap-2">
-                    <Text className="w-full text-center text-xl font-['SpaceGroteskMedium']">
-                      {topBrainPart.type}
-                    </Text>
-                    <Text className="font-['SpaceGroteskRegular'] text-lg">
-                      Well Used Time:{" "}
-                      <Text className="text-primary-700 font-['SpaceGroteskBold']">
-                        {Math.floor(secondBrainPart.time / 60)}h{" "}
-                        {secondBrainPart.time % 60}m
-                      </Text>
-                    </Text>
-                    <Text>Funny quote</Text>
-                  </View>
-                ) : brainPart === "secondBrainPart" ? (
-                  <View className="py-2 gap-2">
-                    <Text className="w-full text-center text-xl font-['SpaceGroteskMedium']">
-                      {secondBrainPart.type}
-                    </Text>
-                    <Text className="font-['SpaceGroteskRegular'] text-lg">
-                      Wasted Time:{" "}
-                      <Text className="text-primary-700 font-['SpaceGroteskBold']">
-                        {Math.floor(secondBrainPart.time / 60)}h{" "}
-                        {secondBrainPart.time % 60}m
-                      </Text>
-                    </Text>
-                    <Text>Funny quote</Text>
-                  </View>
-                ) : brainPart === "thirdBrainPart" ? (
-                  <View className="py-2 gap-2">
-                    <Text className="w-full text-center text-xl font-['SpaceGroteskMedium']">
-                      {thirdBrainPart.type}
-                    </Text>
-                    <Text className="font-['SpaceGroteskRegular'] text-lg">
-                      Wasted Time:{" "}
-                      <Text className="text-primary-700 font-['SpaceGroteskBold']">
-                        {Math.floor(thirdBrainPart.time / 60)}h{" "}
-                        {thirdBrainPart.time % 60}m
-                      </Text>
-                    </Text>
-                    <Text>Funny quote</Text>
-                  </View>
                 ) : (
-                  <View className="py-2 gap-2">
+                  <View className="py-2 gap-1">
                     <Text className="w-full text-center text-xl font-['SpaceGroteskMedium']">
-                      {bottomBrainPart.type}
+                      {activePart?.type}
                     </Text>
+
                     <Text className="font-['SpaceGroteskRegular'] text-lg">
-                      Wasted Time:{" "}
+                      {activePart?.type === "Health and Productivity"
+                        ? "Focus Time: "
+                        : "Wasted Time: "}
                       <Text className="text-primary-700 font-['SpaceGroteskBold']">
-                        {Math.floor(bottomBrainPart.time / 60)}h{" "}
-                        {bottomBrainPart.time % 60}m
+                        {Math.floor(activePart?.time / 60)}h{" "}
+                        {activePart?.time % 60}m
                       </Text>
                     </Text>
-                    <Text>Funny quote</Text>
+
+                    <Text className="italic text-gray-600 font-['SpaceGroteskRegular'] text-md">
+                      &quot;
+                      {getFunnyQuote(
+                        activePart?.type || "Games",
+                        activePart?.time || 0,
+                      )}
+                      &quot;
+                    </Text>
                   </View>
                 )}
               </View>
