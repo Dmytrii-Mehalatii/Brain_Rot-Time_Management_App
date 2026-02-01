@@ -18,19 +18,23 @@ type UserStatsContextType = {
   stats: any;
   formatedTime: string | null;
   timeInMinutes: number;
+  weeklyData: any;
+  weeklyTimeInMinutes: number;
 };
 
 const UserStatsContext = createContext<UserStatsContextType | null>(null);
 
 export function UserStatsProvider({ children }: { children: ReactNode }) {
   const [stats, setStats] = useState<AppType[]>([]);
-  const [formatedTime, setFormatedTime] = useState(null);
+  const [formatedTime, setFormatedTime] = useState<string | null>(null);
   const [timeInMinutes, setTimeInMinutes] = useState(0);
+
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [weeklyTimeInMinutes, setWeeklyTimeInMinutes] = useState(0);
 
   useEffect(() => {
     const handleGetStats = () => {
       const data = UsageStats.getStats();
-      const weeklyData = UsageStats.getWeeklyTime();
       setStats(data);
     };
 
@@ -45,23 +49,41 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
       setTimeInMinutes(data.totalMinutes);
     }
 
+    async function handleGetWeeklyTimeInMinutes() {
+      const weeklyData = UsageStats.getWeeklyTime();
+      weeklyData[1].value = 100;
+      weeklyData[2].value = 620;
+      weeklyData[3].value = 390;
+      weeklyData[5].value = 814;
+      setWeeklyData(weeklyData);
+      let sum = 0;
+      for (let i = 0; i < weeklyData.length; i++) {
+        sum += weeklyData[i].value;
+      }
+      setWeeklyTimeInMinutes(sum);
+    }
+
     handleGetStats();
     handleGetFormatedTime();
     handleGetTimeInMinutes();
+    handleGetWeeklyTimeInMinutes();
 
     const interval = setInterval(handleGetStats, 30_000);
-    const intervalTwo = setInterval(handleGetStats, 30_000);
-    const intervalThree = setInterval(handleGetStats, 30_000);
 
     return () => {
       clearInterval(interval);
-      clearInterval(intervalTwo);
-      clearInterval(intervalThree);
     };
   }, []);
 
   return (
-    <UserStatsContext.Provider value={{ stats, formatedTime, timeInMinutes }}>
+    <UserStatsContext.Provider
+      value={{
+        stats,
+        formatedTime,
+        timeInMinutes,
+        weeklyData,
+        weeklyTimeInMinutes,
+      }}>
       {children}
     </UserStatsContext.Provider>
   );

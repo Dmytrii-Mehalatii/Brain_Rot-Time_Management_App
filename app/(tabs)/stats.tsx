@@ -1,45 +1,51 @@
 import useUserStats from "@/hooks/useUserStats";
 import UsageStats from "@/modules/usage-stats";
-import { FlatList, Image, Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { BarChart } from "react-native-gifted-charts";
 
 export default function Stats() {
-  const { stats } = useUserStats();
+  const { weeklyData, weeklyTimeInMinutes } = useUserStats();
 
+  const avgTimeSpend = weeklyTimeInMinutes / 7;
   return (
-    <View style={{ padding: 50 }}>
+    <View style={{ padding: 16 }}>
       <Text>Permission Status: {String(UsageStats.hasPermission())}</Text>
-
-      <Pressable onPress={() => UsageStats.requestPermission()}>
-        <Text>Open Settings</Text>
-      </Pressable>
-
-      <FlatList
-        data={stats}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item, index }) => (
-          <View
-            style={{
-              borderWidth: 2,
-              marginTop: 8,
-              borderColor:
-                index < 1
-                  ? "#730031"
-                  : index === 1
-                    ? "#AD154B"
-                    : index === 2
-                      ? "#D993AC"
-                      : "#212121",
-            }}>
-            <Image
-              source={{ uri: `data:image/png;base64,${item.icon}` }}
-              style={{ width: 32, height: 32 }}
-            />
-            <Text>
-              {item.appName}: {item.seconds / 60}s
-            </Text>
-          </View>
-        )}
-      />
+      <Text>
+        {Math.round(avgTimeSpend / 60)}h {Math.round(avgTimeSpend % 60)}m
+      </Text>
+      <Text>Daily average</Text>
+      <View style={{ marginTop: 20, width: "100%" }}>
+        <BarChart
+          data={weeklyData.map((item) => ({
+            ...item,
+            frontColor: item.value > 400 ? "#859B80" : "#C86286",
+          }))}
+          height={144}
+          barWidth={46}
+          initialSpacing={0}
+          spacing={4}
+          barBorderTopLeftRadius={8}
+          barBorderTopRightRadius={8}
+          hideYAxisText={true}
+          yAxisThickness={0}
+          xAxisThickness={0}
+          hideRules={true}
+          renderTooltip={(item, index) => (
+            <View
+              key={index}
+              style={{
+                position: "absolute",
+                top: -20,
+                marginBottom: 20,
+                backgroundColor: "#C86286",
+                padding: 6,
+                borderRadius: 4,
+              }}>
+              <Text style={{ color: "white" }}>{item.value}</Text>
+            </View>
+          )}
+        />
+      </View>
     </View>
   );
 }

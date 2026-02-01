@@ -157,40 +157,43 @@ class UsageStatsModule : Module() {
       )
     }
 
-    private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
-        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-            ?: return emptyList()
+private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
+    val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+        ?: return emptyList()
 
-        val blacklistedPackages = listOf(
-            "com.google.android.googlequicksearchbox",
-            "com.android.systemui",
-            "com.google.android.googlesdksetup"
-        )
+    val blacklistedPackages = listOf(
+        "com.google.android.googlequicksearchbox",
+        "com.android.systemui",
+        "com.google.android.googlesdksetup"
+    )
 
-        val result = mutableListOf<Map<String, Any>>()
+    val result = mutableListOf<Map<String, Any>>()
+    val dayLabels = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
-        for (i in 6 downTo 0) {
-            val (start, end) = getDayRange(i)
-            val appDurations = getAppDurationsFromEvents(usm, start, end)
+    for (i in 6 downTo 0) {
+        val (start, end) = getDayRange(i)
+        val appDurations = getAppDurationsFromEvents(usm, start, end)
 
-            val totalMs = appDurations
-                .filter { !blacklistedPackages.contains(it.key) }
-                .values
-                .sum()
+        val totalMs = appDurations
+            .filter { !blacklistedPackages.contains(it.key) }
+            .values
+            .sum()
 
-            val totalMinutes = totalMs / 1000 / 60
-
-            result.add(
-                mapOf(
-                    "dayIndex" to (6 - i),
-                    "totalMinutes" to totalMinutes,
-                    "totalSeconds" to totalMs / 1000
-                )
+        val totalMinutes = totalMs / 1000 / 60
+        
+        val currentIndex = 6 - i
+        
+        result.add(
+            mapOf(
+                "value" to totalMinutes,
+                "label" to dayLabels[currentIndex],
+                "dayIndex" to (currentIndex + 1) 
             )
-        }
-
-        return result
+        )
     }
+
+    return result
+}
 
 
     private fun getManualCategories(context: Context): Map<String, String> {

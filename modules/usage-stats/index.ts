@@ -28,8 +28,8 @@ export function getTotalTimeSpent(): {
 
 export function getWeeklyTime(): {
   dayIndex: number;
-  totalMinutes: number;
-  totalSeconds: number;
+  label: string;
+  value: number;
 }[] {
   return UsageStats.getWeeklyTime();
 }
