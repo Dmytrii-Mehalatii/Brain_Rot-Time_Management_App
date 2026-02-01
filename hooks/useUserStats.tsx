@@ -30,11 +30,13 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleGetStats = () => {
       const data = UsageStats.getStats();
+      const weeklyData = UsageStats.getWeeklyTime();
       setStats(data);
     };
 
     async function handleGetFormatedTime() {
       const data = await UsageStats.sumTime();
+
       setFormatedTime(data.formatted);
     }
 

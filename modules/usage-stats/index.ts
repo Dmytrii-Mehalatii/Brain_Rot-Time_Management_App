@@ -26,4 +26,12 @@ export function getTotalTimeSpent(): {
   return UsageStats.sumTime();
 }
 
+export function getWeeklyTime(): {
+  dayIndex: number;
+  totalMinutes: number;
+  totalSeconds: number;
+}[] {
+  return UsageStats.getWeeklyTime();
+}
+
 export default UsageStats;

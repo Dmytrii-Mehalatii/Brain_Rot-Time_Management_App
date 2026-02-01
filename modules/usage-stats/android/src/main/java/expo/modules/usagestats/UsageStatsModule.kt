@@ -53,6 +53,15 @@ class UsageStatsModule : Module() {
             }
             getTotalTimeInternal(context)
         }
+
+        Function("getWeeklyTime") {
+            val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
+            if (!hasUsagePermission(context)) {
+                return@Function emptyList<Map<String, Any>>()
+            }
+            getWeeklyTimeInternal(context)
+        }
+
     }
 
     private fun getTodayStartTime(): Long {
@@ -63,6 +72,24 @@ class UsageStatsModule : Module() {
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
     }
+
+    private fun getDayRange(dayOffset: Int): Pair<Long, Long> {
+    val cal = Calendar.getInstance()
+
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+
+    cal.add(Calendar.DAY_OF_YEAR, -dayOffset)
+    val start = cal.timeInMillis
+
+    cal.add(Calendar.DAY_OF_YEAR, 1)
+    val end = cal.timeInMillis
+
+    return start to end
+}
+
 
     private fun hasUsagePermission(context: Context): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
@@ -130,6 +157,42 @@ class UsageStatsModule : Module() {
       )
     }
 
+    private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return emptyList()
+
+        val blacklistedPackages = listOf(
+            "com.google.android.googlequicksearchbox",
+            "com.android.systemui",
+            "com.google.android.googlesdksetup"
+        )
+
+        val result = mutableListOf<Map<String, Any>>()
+
+        for (i in 6 downTo 0) {
+            val (start, end) = getDayRange(i)
+            val appDurations = getAppDurationsFromEvents(usm, start, end)
+
+            val totalMs = appDurations
+                .filter { !blacklistedPackages.contains(it.key) }
+                .values
+                .sum()
+
+            val totalMinutes = totalMs / 1000 / 60
+
+            result.add(
+                mapOf(
+                    "dayIndex" to (6 - i),
+                    "totalMinutes" to totalMinutes,
+                    "totalSeconds" to totalMs / 1000
+                )
+            )
+        }
+
+        return result
+    }
+
+
     private fun getManualCategories(context: Context): Map<String, String> {
         val map = mutableMapOf<String, String>()
         try {
@@ -164,8 +227,16 @@ class UsageStatsModule : Module() {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()
         val manualMap = getManualCategories(context) 
         
-        val endTime = System.currentTimeMillis()
-        val startTime = getTodayStartTime() 
+        val cal = Calendar.getInstance()
+
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val startTime = cal.timeInMillis
+
+        cal.add(Calendar.DAY_OF_YEAR, 1)
+        val endTime = cal.timeInMillis
         val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
         val pm = context.packageManager
 
