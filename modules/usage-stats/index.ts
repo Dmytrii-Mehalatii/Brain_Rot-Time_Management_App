@@ -34,4 +34,15 @@ export function getWeeklyTime(): {
   return UsageStats.getWeeklyTime();
 }
 
+export function getWeeklyAppStats(): {
+  packageName: string;
+  appName: string;
+  appIndex: number;
+  category: string;
+  seconds: number;
+  icon: string;
+}[] {
+  return UsageStats.getWeeklyAppStats();
+}
+
 export default UsageStats;

@@ -20,6 +20,7 @@ type UserStatsContextType = {
   timeInMinutes: number;
   weeklyData: any;
   weeklyTimeInMinutes: number;
+  weeklyAppsTime: any;
 };
 
 const UserStatsContext = createContext<UserStatsContextType | null>(null);
@@ -32,38 +33,45 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
   const [weeklyData, setWeeklyData] = useState([]);
   const [weeklyTimeInMinutes, setWeeklyTimeInMinutes] = useState(0);
 
+  const [weeklyAppsTime, setWeeklyAppsTime] = useState([]);
+
   useEffect(() => {
     const handleGetStats = () => {
       const data = UsageStats.getStats();
       setStats(data);
     };
 
-    async function handleGetFormatedTime() {
-      const data = await UsageStats.sumTime();
+    const handleGetWeeklyAppsTime = () => {
+      const data = UsageStats.getWeeklyAppStats();
+      setWeeklyAppsTime(data);
+    };
+
+    const handleGetFormatedTime = () => {
+      const data = UsageStats.sumTime();
 
       setFormatedTime(data.formatted);
-    }
+    };
 
-    async function handleGetTimeInMinutes() {
-      const data = await UsageStats.sumTime();
+    const handleGetTimeInMinutes = () => {
+      const data = UsageStats.sumTime();
       setTimeInMinutes(data.totalMinutes);
-    }
+    };
 
-    async function handleGetWeeklyTimeInMinutes() {
+    const handleGetWeeklyTimeInMinutes = () => {
       const weeklyData = UsageStats.getWeeklyTime();
+      console.log(weeklyData);
       weeklyData[1].value = 100;
-      weeklyData[2].value = 620;
-      weeklyData[3].value = 390;
-      weeklyData[5].value = 814;
+      weeklyData[3].value = 520;
       setWeeklyData(weeklyData);
       let sum = 0;
       for (let i = 0; i < weeklyData.length; i++) {
         sum += weeklyData[i].value;
       }
       setWeeklyTimeInMinutes(sum);
-    }
+    };
 
     handleGetStats();
+    handleGetWeeklyAppsTime();
     handleGetFormatedTime();
     handleGetTimeInMinutes();
     handleGetWeeklyTimeInMinutes();
@@ -83,6 +91,7 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
         timeInMinutes,
         weeklyData,
         weeklyTimeInMinutes,
+        weeklyAppsTime,
       }}>
       {children}
     </UserStatsContext.Provider>

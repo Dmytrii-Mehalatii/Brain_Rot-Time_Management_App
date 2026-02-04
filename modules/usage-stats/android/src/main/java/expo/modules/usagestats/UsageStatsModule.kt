@@ -62,6 +62,14 @@ class UsageStatsModule : Module() {
             getWeeklyTimeInternal(context)
         }
 
+        Function("getWeeklyAppStats") {
+            val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
+            if (!hasUsagePermission(context)) {
+                return@Function emptyList<Map<String, Any>>()
+            }
+            getWeeklyAppStatsInternal(context)
+        }
+
     }
 
     private fun getTodayStartTime(): Long {
@@ -284,6 +292,70 @@ private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
         }
         return result
     }
+
+    private fun getWeeklyAppStatsInternal(context: Context): List<Map<String, Any>> {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return emptyList()
+
+        val pm = context.packageManager
+        val manualMap = getManualCategories(context)
+
+        val blacklistedPackages = listOf(
+            "com.google.android.googlequicksearchbox",
+            "com.android.systemui",
+            "com.google.android.googlesdksetup"
+        )
+
+        val weeklyDurations = mutableMapOf<String, Long>()
+
+        for (i in 0..6) {
+            val (start, end) = getDayRange(i)
+            val dailyDurations = getAppDurationsFromEvents(usm, start, end)
+
+            dailyDurations.forEach { (pkg, duration) ->
+                weeklyDurations[pkg] = (weeklyDurations[pkg] ?: 0L) + duration
+            }
+        }
+
+        val sortedApps = weeklyDurations.entries
+            .filter { !blacklistedPackages.contains(it.key) }
+            .sortedByDescending { it.value }
+
+        val result = mutableListOf<Map<String, Any>>()
+        var rank = 1
+
+        for ((packageName, timeMs) in sortedApps) {
+            try {
+                val appInfo = pm.getApplicationInfo(packageName, 0)
+                val appName = pm.getApplicationLabel(appInfo).toString()
+                val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
+
+                val categoryName = manualMap[packageName] ?: run {
+                    val categoryId = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        appInfo.category
+                    } else {
+                        -1
+                    }
+                    getCategoryString(categoryId)
+                }
+
+                result.add(
+                    mapOf(
+                        "packageName" to packageName,
+                        "appIndex" to rank,
+                        "appName" to appName,
+                        "category" to categoryName,
+                        "seconds" to timeMs / 1000,
+                        "icon" to iconBase64
+                    )
+                )
+                rank++
+            } catch (_: Exception) {}
+        }
+
+        return result
+    }
+
 
     private fun drawableToBase64(drawable: Drawable): String {
         val bitmap = if (drawable is BitmapDrawable) {

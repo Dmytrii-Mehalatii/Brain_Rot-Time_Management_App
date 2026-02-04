@@ -10,7 +10,7 @@ import { Image, Pressable, Text, View } from "react-native";
 
 export default function Home() {
   const { textColor } = useTheme();
-  const { formatedTime, timeInMinutes } = useUserStats();
+  const { stats, formatedTime, timeInMinutes } = useUserStats();
 
   const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
   const { isBrainModalVisible } = useBrainMap();
@@ -79,7 +79,11 @@ export default function Home() {
             </Pressable>
           </View>
 
-          <EnemyList />
+          <EnemyList
+            data={stats.slice(0, 3)}
+            width={104}
+            horizontal={true}
+          />
         </View>
       </View>
     </View>

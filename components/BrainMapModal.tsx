@@ -206,8 +206,8 @@ export default function BrainMapModal() {
                         ? "Focus Time: "
                         : "Wasted Time: "}
                       <Text className="text-primary-700 font-['SpaceGroteskBold']">
-                        {Math.floor(activePart?.time / 60)}h{" "}
-                        {activePart?.time % 60}m
+                        {Math.floor((activePart?.time ?? 0) / 60)}h{" "}
+                        {(activePart?.time ?? 0) % 60}m
                       </Text>
                     </Text>
 

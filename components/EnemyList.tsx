@@ -1,11 +1,17 @@
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats from "@/hooks/useUserStats";
 import { Image, Text, View } from "react-native";
 import CustomFlatList from "./CustomFlatList";
 
-export default function EnemyList() {
+export default function EnemyList({
+  data,
+  width,
+  horizontal,
+}: {
+  data: any;
+  width: number;
+  horizontal: boolean;
+}) {
   const { value, textColor } = useTheme();
-  const { stats } = useUserStats();
 
   const getBorderColor = (index: number) => {
     if (value < 3) {
@@ -15,29 +21,42 @@ export default function EnemyList() {
   };
 
   return (
-    <View className="h-14">
+    <View>
       <CustomFlatList
-        data={stats.slice(0, 3)}
-        isHorizontal={true}
+        data={data}
+        isHorizontal={horizontal}
         isScrollEnabled={false}
         renderItem={(item, { hours, minutes }) => (
           <View
-            className="w-[104px] h-full mr-2 px-2 flex-row items-center justify-center rounded-md"
+            className="flex-row items-center justify-center rounded-md"
             style={{
+              width: width,
               borderWidth: 2,
+              marginRight: horizontal ? 8 : 16,
+              paddingHorizontal: horizontal ? 4 : 12,
+              height: horizontal ? "auto" : 60,
+              marginBottom:
+                horizontal || item.appIndex === data.length ? 0 : 17,
               borderColor: getBorderColor(item.appIndex - 1),
             }}>
             <Image
               source={{ uri: `data:image/png;base64,${item.icon}` }}
-              style={{ width: 24, height: 24 }}
+              style={{
+                width: horizontal ? 24 : 32,
+                height: horizontal ? 24 : 32,
+              }}
             />
 
             <View className="py-1 flex w-full flex-shrink">
               <Text
-                className="text-base text-center flex-shrink"
+                className="w-full text-center flex-shrink"
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                style={{ maxWidth: 60, fontFamily: "SpaceGroteskRegular" }}>
+                style={{
+                  fontSize: horizontal ? 14 : 16,
+                  maxWidth: horizontal ? 60 : 120,
+                  fontFamily: "SpaceGroteskRegular",
+                }}>
                 {item.appName}
               </Text>
               <Text
