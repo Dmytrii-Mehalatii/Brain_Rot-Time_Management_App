@@ -61,7 +61,6 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
       const weeklyData = UsageStats.getWeeklyTime();
       console.log(weeklyData);
       weeklyData[1].value = 100;
-      weeklyData[3].value = 520;
       setWeeklyData(weeklyData);
       let sum = 0;
       for (let i = 0; i < weeklyData.length; i++) {

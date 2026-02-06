@@ -1,5 +1,4 @@
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats from "@/hooks/useUserStats";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect } from "react";
@@ -19,10 +18,17 @@ import CustomFlatList from "./CustomFlatList";
 type Props = {
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
+  stats: any;
+  date: "day" | "week";
 };
 
-export default function EnemyModal({ isVisible, setIsVisible }: Props) {
-  const { stats } = useUserStats();
+export default function EnemyModal({
+  isVisible,
+  setIsVisible,
+  stats,
+  date,
+}: Props) {
+  // const { stats } = useUserStats();
   const { textColor } = useTheme();
 
   const swapedArray = [...stats.slice(0, 3)];
@@ -74,7 +80,7 @@ export default function EnemyModal({ isVisible, setIsVisible }: Props) {
                   <Text
                     style={{ fontFamily: "SpaceGroteskRegular" }}
                     className="color-[#212121] text-2xl w-full flex-shrink">
-                    Today’s Biggest Enemies:
+                    {date === "day" ? "Today's" : "Weekly"} Biggest Enemies:
                   </Text>
                   <Pressable onPress={() => setIsVisible(false)}>
                     <MaterialIcons

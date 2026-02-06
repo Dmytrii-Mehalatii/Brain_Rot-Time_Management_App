@@ -5,11 +5,9 @@ import CustomFlatList from "./CustomFlatList";
 export default function EnemyList({
   data,
   width,
-  horizontal,
 }: {
   data: any;
   width: number;
-  horizontal: boolean;
 }) {
   const { value, textColor } = useTheme();
 
@@ -24,7 +22,7 @@ export default function EnemyList({
     <View>
       <CustomFlatList
         data={data}
-        isHorizontal={horizontal}
+        isHorizontal={true}
         isScrollEnabled={false}
         renderItem={(item, { hours, minutes }) => (
           <View
@@ -32,18 +30,16 @@ export default function EnemyList({
             style={{
               width: width,
               borderWidth: 2,
-              marginRight: horizontal ? 8 : 16,
-              paddingHorizontal: horizontal ? 4 : 12,
-              height: horizontal ? "auto" : 60,
-              marginBottom:
-                horizontal || item.appIndex === data.length ? 0 : 17,
+              marginRight: 8,
+              paddingHorizontal: 4,
+              height: "auto",
               borderColor: getBorderColor(item.appIndex - 1),
             }}>
             <Image
               source={{ uri: `data:image/png;base64,${item.icon}` }}
               style={{
-                width: horizontal ? 24 : 32,
-                height: horizontal ? 24 : 32,
+                width: 24,
+                height: 24,
               }}
             />
 
@@ -53,8 +49,8 @@ export default function EnemyList({
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={{
-                  fontSize: horizontal ? 14 : 16,
-                  maxWidth: horizontal ? 60 : 120,
+                  fontSize: 14,
+                  maxWidth: 60,
                   fontFamily: "SpaceGroteskRegular",
                 }}>
                 {item.appName}

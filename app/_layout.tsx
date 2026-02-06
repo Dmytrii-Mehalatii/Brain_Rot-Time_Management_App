@@ -5,6 +5,7 @@ import UserAppsProvider from "@/hooks/useUserAppsType";
 import { UserStatsProvider } from "@/hooks/useUserStats";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "./global.css";
 
 export default function RootLayout() {
@@ -16,32 +17,34 @@ export default function RootLayout() {
 
   if (!fontsLoaded) return null;
   return (
-    <ThemeProvider>
-      <UserStatsProvider>
-        <UserAppsProvider>
-          <BrainMapProvider>
-            <Stack>
-              <Stack.Screen
-                name="(tabs)"
-                options={{
-                  headerTitle: () => (
-                    <Header
-                      title="Brain Rot"
-                      brainIcon={true}
-                    />
-                  ),
-                }}
-              />
-              <Stack.Screen
-                name="index"
-                options={{
-                  headerShadowVisible: false,
-                }}
-              />
-            </Stack>
-          </BrainMapProvider>
-        </UserAppsProvider>
-      </UserStatsProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <UserStatsProvider>
+          <UserAppsProvider>
+            <BrainMapProvider>
+              <Stack>
+                <Stack.Screen
+                  name="(tabs)"
+                  options={{
+                    headerTitle: () => (
+                      <Header
+                        title="Brain Rot"
+                        brainIcon={true}
+                      />
+                    ),
+                  }}
+                />
+                <Stack.Screen
+                  name="index"
+                  options={{
+                    headerShadowVisible: false,
+                  }}
+                />
+              </Stack>
+            </BrainMapProvider>
+          </UserAppsProvider>
+        </UserStatsProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

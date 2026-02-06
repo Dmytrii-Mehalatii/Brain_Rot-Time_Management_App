@@ -82,21 +82,21 @@ class UsageStatsModule : Module() {
     }
 
     private fun getDayRange(dayOffset: Int): Pair<Long, Long> {
-    val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance()
 
-    cal.set(Calendar.HOUR_OF_DAY, 0)
-    cal.set(Calendar.MINUTE, 0)
-    cal.set(Calendar.SECOND, 0)
-    cal.set(Calendar.MILLISECOND, 0)
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
 
-    cal.add(Calendar.DAY_OF_YEAR, -dayOffset)
-    val start = cal.timeInMillis
+        cal.add(Calendar.DAY_OF_YEAR, -dayOffset)
+        val start = cal.timeInMillis
 
-    cal.add(Calendar.DAY_OF_YEAR, 1)
-    val end = cal.timeInMillis
+        cal.add(Calendar.DAY_OF_YEAR, 1)
+        val end = cal.timeInMillis
 
-    return start to end
-}
+        return start to end
+    }
 
 
     private fun hasUsagePermission(context: Context): Boolean {
@@ -165,43 +165,41 @@ class UsageStatsModule : Module() {
       )
     }
 
-private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
-    val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-        ?: return emptyList()
+    private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return emptyList()
 
-    val blacklistedPackages = listOf(
-        "com.google.android.googlequicksearchbox",
-        "com.android.systemui",
-        "com.google.android.googlesdksetup"
-    )
-
-    val result = mutableListOf<Map<String, Any>>()
-    val dayLabels = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-
-    for (i in 6 downTo 0) {
-        val (start, end) = getDayRange(i)
-        val appDurations = getAppDurationsFromEvents(usm, start, end)
-
-        val totalMs = appDurations
-            .filter { !blacklistedPackages.contains(it.key) }
-            .values
-            .sum()
-
-        val totalMinutes = totalMs / 1000 / 60
-        
-        val currentIndex = 6 - i
-        
-        result.add(
-            mapOf(
-                "value" to totalMinutes,
-                "label" to dayLabels[currentIndex],
-                "dayIndex" to (currentIndex + 1) 
-            )
+        val blacklistedPackages = listOf(
+            "com.google.android.googlequicksearchbox",
+            "com.android.systemui",
+            "com.google.android.googlesdksetup"
         )
-    }
 
-    return result
-}
+        val result = mutableListOf<Map<String, Any>>()
+
+        for (i in 6 downTo 0) {
+            val (start, end) = getDayRange(i)
+            val appDurations = getAppDurationsFromEvents(usm, start, end)
+        
+            val totalMs = appDurations
+                .filter { !blacklistedPackages.contains(it.key) }
+                .values
+                .sum()
+        
+            val totalMinutes = totalMs / 1000 / 60
+            val currentIndex = 6 - i
+        
+            result.add(
+                mapOf(
+                    "value" to totalMinutes,
+                    "label" to getDayLabel(start, i == 0),
+                    "dayIndex" to (currentIndex + 1)
+                )
+            )
+        }
+
+        return result
+    }
 
 
     private fun getManualCategories(context: Context): Map<String, String> {
@@ -232,6 +230,26 @@ private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
             else -> "Undefined" 
         }
     }
+
+private fun getDayLabel(timeInMillis: Long, isToday: Boolean): String {
+    if (isToday) return "Today"
+
+    val cal = Calendar.getInstance()
+    cal.timeInMillis = timeInMillis
+
+    return when (cal.get(Calendar.DAY_OF_WEEK)) {
+        Calendar.MONDAY -> "Mon"
+        Calendar.TUESDAY -> "Tue"
+        Calendar.WEDNESDAY -> "Wed"
+        Calendar.THURSDAY -> "Thu"
+        Calendar.FRIDAY -> "Fri"
+        Calendar.SATURDAY -> "Sat"
+        Calendar.SUNDAY -> "Sun"
+        else -> ""
+    }
+}
+
+
     
     private fun getStatsInternal(context: Context): List<Map<String, Any>> {
         val result = mutableListOf<Map<String, Any>>()

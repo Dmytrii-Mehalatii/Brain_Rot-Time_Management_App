@@ -24,6 +24,8 @@ export default function Home() {
         <EnemyModal
           isVisible={isEnemiesModalVisible}
           setIsVisible={setIsEnemiesModalVisible}
+          stats={stats}
+          date="day"
         />
       )}
 
@@ -82,7 +84,6 @@ export default function Home() {
           <EnemyList
             data={stats.slice(0, 3)}
             width={104}
-            horizontal={true}
           />
         </View>
       </View>
