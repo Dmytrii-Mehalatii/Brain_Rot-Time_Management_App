@@ -231,26 +231,24 @@ class UsageStatsModule : Module() {
         }
     }
 
-private fun getDayLabel(timeInMillis: Long, isToday: Boolean): String {
-    if (isToday) return "Today"
-
-    val cal = Calendar.getInstance()
-    cal.timeInMillis = timeInMillis
-
-    return when (cal.get(Calendar.DAY_OF_WEEK)) {
-        Calendar.MONDAY -> "Mon"
-        Calendar.TUESDAY -> "Tue"
-        Calendar.WEDNESDAY -> "Wed"
-        Calendar.THURSDAY -> "Thu"
-        Calendar.FRIDAY -> "Fri"
-        Calendar.SATURDAY -> "Sat"
-        Calendar.SUNDAY -> "Sun"
-        else -> ""
-    }
-}
-
-
+    private fun getDayLabel(timeInMillis: Long, isToday: Boolean): String {
+        if (isToday) return "Today"
     
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = timeInMillis
+    
+        return when (cal.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.MONDAY -> "Mon"
+            Calendar.TUESDAY -> "Tue"
+            Calendar.WEDNESDAY -> "Wed"
+            Calendar.THURSDAY -> "Thu"
+            Calendar.FRIDAY -> "Fri"
+            Calendar.SATURDAY -> "Sat"
+            Calendar.SUNDAY -> "Sun"
+            else -> ""
+        }
+    }
+
     private fun getStatsInternal(context: Context): List<Map<String, Any>> {
         val result = mutableListOf<Map<String, Any>>()
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()

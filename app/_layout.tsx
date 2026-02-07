@@ -1,5 +1,5 @@
 import Header from "@/components/Header";
-import BrainMapProvider from "@/hooks/useBrainMap";
+import BrainMapProvider from "@/hooks/useModal";
 import { ThemeProvider } from "@/hooks/useTheme";
 import UserAppsProvider from "@/hooks/useUserAppsType";
 import { UserStatsProvider } from "@/hooks/useUserStats";

@@ -3,7 +3,7 @@ import Battery from "@/components/Battery";
 import BrainMap from "@/components/BrainMap";
 import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
-import { useBrainMap } from "@/hooks/useBrainMap";
+import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { useState } from "react";
@@ -14,7 +14,7 @@ export default function Home() {
   const { stats, formatedTime, timeInMinutes } = useUserStats();
 
   const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
-  const { isBrainModalVisible, setIsBrainModalVisible } = useBrainMap();
+  const { isBrainModalVisible, setIsBrainModalVisible } = useModal();
 
   const MAX_MINUTES = 540;
   const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
@@ -30,13 +30,11 @@ export default function Home() {
         />
       )}
 
-      {isBrainModalVisible && (
-        <BaseModal
-          visible={isBrainModalVisible}
-          onClose={() => setIsBrainModalVisible(false)}>
-          <BrainMap />
-        </BaseModal>
-      )}
+      <BaseModal
+        visible={isBrainModalVisible}
+        onClose={() => setIsBrainModalVisible(false)}>
+        <BrainMap />
+      </BaseModal>
 
       <View className="h-full flex-shrink">
         <Image

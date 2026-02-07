@@ -1,6 +1,6 @@
 import BrainIcon from "@/assets/icons/brain_icon.svg";
 import Calendar from "@/assets/icons/calendar.svg";
-import { useBrainMap } from "@/hooks/useBrainMap";
+import { useModal } from "@/hooks/useModal";
 import { Pressable, Text, View } from "react-native";
 
 type HeaderProps = {
@@ -9,7 +9,7 @@ type HeaderProps = {
 };
 
 export default function Header({ title, brainIcon }: HeaderProps) {
-  const { setIsBrainModalVisible } = useBrainMap();
+  const { setIsBrainModalVisible } = useModal();
   return (
     <View className="flex-1 flex-row gap-5 px-5">
       <Text
