@@ -45,4 +45,21 @@ export function getWeeklyAppStats(): {
   return UsageStats.getWeeklyAppStats();
 }
 
+export function getDailyStreak(): {
+  streak: number;
+  todayMinutes: number;
+  successToday: boolean;
+  limitMinutes: number;
+} {
+  return UsageStats.getDailyStreak();
+}
+
+export function getWeeklyStreak(): {
+  day: string;
+  minutes: number;
+  success: boolean;
+}[] {
+  return UsageStats.getWeeklyStreak();
+}
+
 export default UsageStats;

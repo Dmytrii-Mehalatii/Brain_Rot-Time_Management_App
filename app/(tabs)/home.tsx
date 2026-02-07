@@ -14,7 +14,12 @@ export default function Home() {
   const { stats, formatedTime, timeInMinutes } = useUserStats();
 
   const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
-  const { isBrainModalVisible, setIsBrainModalVisible } = useModal();
+  const {
+    isBrainModalVisible,
+    setIsBrainModalVisible,
+    isStreakModalVisible,
+    setIsStreakModalVisible,
+  } = useModal();
 
   const MAX_MINUTES = 540;
   const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
@@ -34,6 +39,12 @@ export default function Home() {
         visible={isBrainModalVisible}
         onClose={() => setIsBrainModalVisible(false)}>
         <BrainMap />
+      </BaseModal>
+
+      <BaseModal
+        visible={isStreakModalVisible}
+        onClose={() => setIsStreakModalVisible(false)}>
+        <Text>Streak</Text>
       </BaseModal>
 
       <View className="h-full flex-shrink">

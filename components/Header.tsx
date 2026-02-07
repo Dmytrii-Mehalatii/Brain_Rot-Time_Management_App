@@ -9,7 +9,7 @@ type HeaderProps = {
 };
 
 export default function Header({ title, brainIcon }: HeaderProps) {
-  const { setIsBrainModalVisible } = useModal();
+  const { setIsBrainModalVisible, setIsStreakModalVisible } = useModal();
   return (
     <View className="flex-1 flex-row gap-5 px-5">
       <Text
@@ -17,13 +17,19 @@ export default function Header({ title, brainIcon }: HeaderProps) {
         style={{ fontFamily: "SpaceGroteskRegular" }}>
         {title}
       </Text>
-      <Calendar
-        width={32}
-        height={32}
-        color="212121"
-      />
+
+      <Pressable
+        onPress={() => setIsStreakModalVisible((prev: boolean) => !prev)}>
+        <Calendar
+          width={32}
+          height={32}
+          color="212121"
+        />
+      </Pressable>
+
       {brainIcon && (
-        <Pressable onPress={() => setIsBrainModalVisible((prev) => !prev)}>
+        <Pressable
+          onPress={() => setIsBrainModalVisible((prev: boolean) => !prev)}>
           <BrainIcon
             color="#212121"
             width={32}

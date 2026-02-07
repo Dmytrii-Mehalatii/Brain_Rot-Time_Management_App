@@ -70,6 +70,21 @@ class UsageStatsModule : Module() {
             getWeeklyAppStatsInternal(context)
         }
 
+        Function("getDailyStreak") {
+            val context = appContext.reactContext ?: return@Function emptyMap<String, Any>()
+            if (!hasUsagePermission(context)) {
+              return@Function emptyMap<String, Any>()
+            }
+            getDailyStreak(context)
+        }
+
+        Function("getWeeklyStreak") {
+          val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
+          if (!hasUsagePermission(context)) {
+            return@Function emptyList<Map<String, Any>>()
+          }
+          getWeeklyStreakData(context)
+        }
     }
 
     private fun getTodayStartTime(): Long {
@@ -233,10 +248,10 @@ class UsageStatsModule : Module() {
 
     private fun getDayLabel(timeInMillis: Long, isToday: Boolean): String {
         if (isToday) return "Today"
-    
+
         val cal = Calendar.getInstance()
         cal.timeInMillis = timeInMillis
-    
+
         return when (cal.get(Calendar.DAY_OF_WEEK)) {
             Calendar.MONDAY -> "Mon"
             Calendar.TUESDAY -> "Tue"
@@ -389,5 +404,71 @@ class UsageStatsModule : Module() {
         val output = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+    }
+
+    private fun getTotalMinutesForDay(
+      context: Context,
+      dayOffset: Int
+    ): Long {
+      val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+        ?: return 0L
+
+      val (start, end) = getDayRange(dayOffset)
+      val blacklistedPackages = listOf(
+        "com.google.android.googlequicksearchbox",
+        "com.android.systemui",
+        "com.google.android.googlesdksetup"
+      )
+
+      val appDurations = getAppDurationsFromEvents(usm, start, end)
+      val totalMs = appDurations
+        .filter { !blacklistedPackages.contains(it.key) }
+        .values
+        .sum()
+
+      return totalMs / 1000 / 60
+    }
+
+    private fun getDailyStreak(context: Context): Map<String, Any> {
+      val MAX_MINUTES = 240L
+      var streak = 0
+
+      for (i in 0..30) {
+        val minutes = getTotalMinutesForDay(context, i)
+        if (minutes < MAX_MINUTES) {
+          streak++
+        } else {
+          break
+        }
+      }
+
+      val todayMinutes = getTotalMinutesForDay(context, 0)
+      val successToday = todayMinutes < MAX_MINUTES
+
+      return mapOf(
+        "streak" to streak,
+        "todayMinutes" to todayMinutes,
+        "successToday" to successToday,
+        "limitMinutes" to MAX_MINUTES
+      )
+    }
+
+    private fun getWeeklyStreakData(context: Context): List<Map<String, Any>> {
+      val MAX_MINUTES = 240L
+      val result = mutableListOf<Map<String, Any>>()
+
+      for (i in 6 downTo 0) {
+        val minutes = getTotalMinutesForDay(context, i)
+        val (start, _) = getDayRange(i)
+
+        result.add(
+          mapOf(
+            "day" to getDayLabel(start, i == 0),
+            "minutes" to minutes,
+            "success" to (minutes < MAX_MINUTES)
+          )
+        )
+      }
+      return result
     }
 }
