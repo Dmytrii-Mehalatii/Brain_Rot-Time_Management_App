@@ -28,7 +28,6 @@ export default function EnemyModal({
   stats,
   date,
 }: Props) {
-  // const { stats } = useUserStats();
   const { textColor } = useTheme();
 
   const swapedArray = [...stats.slice(0, 3)];
