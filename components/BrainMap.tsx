@@ -39,33 +39,57 @@ export default function BrainMap() {
     thirdBrainPart,
     bottomBrainPart,
   ]);
+  //3C79C9 for frozen part 68A5F4 second frozen
+  function getBrainPartColor(
+    value: number,
+    part:
+      | "topBrainPart"
+      | "secondBrainPart"
+      | "thirdBrainPart"
+      | "bottomBrainPart",
+  ) {
+    if (value < 60 && part === "topBrainPart") {
+      return ["#859B80", "#6B7D6A"];
+    }
+    if (value < 90 && part === "topBrainPart") {
+      return ["#AAC7A4", "#6B7D6A"];
+    }
+    if (value < 120 && part === "topBrainPart") {
+      return ["#E6B6C7", "#ad144a"];
+    }
+    if (value < 150 && part === "topBrainPart") {
+      return ["#C86286", "#ad144a"];
+    }
+    if (value < 240 && part === "topBrainPart") {
+      return ["#d65181", "#ad144a"];
+    }
 
-  function getBrainPartColor(value: number) {
     if (value < 60) return ["#d65181", "#ad144a"];
     if (value < 90) return ["#C86286", "#ad144a"];
     if (value < 120) return ["#E6B6C7", "#ad144a"];
     if (value < 150) return ["#AAC7A4", "#6B7D6A"];
     if (value < 240) return ["#859B80", "#6B7D6A"];
-    return "#677863";
+
+    return ["#677863", "#677863"];
   }
 
   const topColor = useMemo(
-    () => getBrainPartColor(topBrainPart.time),
+    () => getBrainPartColor(topBrainPart.time, "topBrainPart"),
     [topBrainPart],
   );
 
   const secondColor = useMemo(
-    () => getBrainPartColor(secondBrainPart.time),
+    () => getBrainPartColor(secondBrainPart.time, "secondBrainPart"),
     [secondBrainPart],
   );
 
   const thirdColor = useMemo(
-    () => getBrainPartColor(thirdBrainPart.time),
+    () => getBrainPartColor(thirdBrainPart.time, "thirdBrainPart"),
     [thirdBrainPart],
   );
 
   const bottomColor = useMemo(
-    () => getBrainPartColor(bottomBrainPart.time),
+    () => getBrainPartColor(bottomBrainPart.time, "bottomBrainPart"),
     [bottomBrainPart],
   );
   return (
@@ -84,6 +108,8 @@ export default function BrainMap() {
             width="100%"
             height="90%"
             fill={topColor[0]}
+            color1={topColor[1]}
+            color2={topColor[0]}
           />
         </Pressable>
         <Pressable
@@ -136,6 +162,8 @@ export default function BrainMap() {
             width="100%"
             height="150%"
             fill={bottomColor[0]}
+            color1={bottomColor[1]}
+            color2={bottomColor[0]}
           />
         </Pressable>
       </View>

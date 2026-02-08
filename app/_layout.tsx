@@ -32,6 +32,7 @@ export default function RootLayout() {
                         brainIcon={true}
                       />
                     ),
+                    headerBackVisible: false,
                   }}
                 />
                 <Stack.Screen

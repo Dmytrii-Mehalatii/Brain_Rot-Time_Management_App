@@ -13,7 +13,7 @@ export default function Header({ title, brainIcon }: HeaderProps) {
   return (
     <View className="flex-1 flex-row gap-5 px-5">
       <Text
-        className="text-3xl w-full flex-shrink text-[#212121]"
+        className="text-3xl flex-1 text-[#212121]"
         style={{ fontFamily: "SpaceGroteskRegular" }}>
         {title}
       </Text>
