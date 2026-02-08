@@ -3,6 +3,7 @@ import Battery from "@/components/Battery";
 import BrainMap from "@/components/BrainMap";
 import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
+import Streak from "@/components/Streak";
 import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
@@ -44,7 +45,7 @@ export default function Home() {
       <BaseModal
         visible={isStreakModalVisible}
         onClose={() => setIsStreakModalVisible(false)}>
-        <Text>Streak</Text>
+        <Streak />
       </BaseModal>
 
       <View className="h-full flex-shrink">

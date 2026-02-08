@@ -14,6 +14,19 @@ export type AppType = {
   seconds: number;
 };
 
+type DailyStreakType = {
+  streak: number;
+  todayMinutes: number;
+  successToday: boolean;
+  limitMinutes: number;
+};
+
+type WeeklyStreakType = {
+  day: string;
+  minutes: number;
+  success: boolean;
+};
+
 type UserStatsContextType = {
   stats: any;
   formatedTime: string | null;
@@ -21,6 +34,8 @@ type UserStatsContextType = {
   weeklyData: any;
   weeklyTimeInMinutes: number;
   weeklyAppsTime: any;
+  dailyStreak: DailyStreakType;
+  weeklyStreak: WeeklyStreakType[];
 };
 
 const UserStatsContext = createContext<UserStatsContextType | null>(null);
@@ -34,6 +49,14 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
   const [weeklyTimeInMinutes, setWeeklyTimeInMinutes] = useState(0);
 
   const [weeklyAppsTime, setWeeklyAppsTime] = useState([]);
+
+  const [dailyStreak, setDailyStreak] = useState<DailyStreakType>({
+    streak: 0,
+    todayMinutes: 0,
+    successToday: false,
+    limitMinutes: 0,
+  });
+  const [weeklyStreak, setWeeklyStreak] = useState<WeeklyStreakType[]>([]);
 
   useEffect(() => {
     const handleGetStats = () => {
@@ -59,7 +82,6 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
 
     const handleGetWeeklyTimeInMinutes = () => {
       const weeklyData = UsageStats.getWeeklyTime();
-      console.log(weeklyData);
       weeklyData[1].value = 100;
       setWeeklyData(weeklyData);
       let sum = 0;
@@ -69,11 +91,23 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
       setWeeklyTimeInMinutes(sum);
     };
 
+    const handleGetDailyStreak = () => {
+      const data = UsageStats.getDailyStreak();
+      setDailyStreak(data);
+    };
+
+    const handleGetWeeklyStreak = () => {
+      const data = UsageStats.getWeeklyStreak();
+      setWeeklyStreak(data);
+    };
+
     handleGetStats();
     handleGetWeeklyAppsTime();
     handleGetFormatedTime();
     handleGetTimeInMinutes();
     handleGetWeeklyTimeInMinutes();
+    handleGetDailyStreak();
+    handleGetWeeklyStreak();
 
     const interval = setInterval(handleGetStats, 30_000);
 
@@ -91,6 +125,8 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
         weeklyData,
         weeklyTimeInMinutes,
         weeklyAppsTime,
+        dailyStreak,
+        weeklyStreak,
       }}>
       {children}
     </UserStatsContext.Provider>

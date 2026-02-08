@@ -144,7 +144,7 @@ export default function Stats() {
           </View>
         </View>
 
-        <View className="bg-black h-[1.5px] my-10" />
+        <View className="bg-black h-[1.25px] my-10" />
 
         <View className="flex">
           <View className="w-full flex-row items-center mb-4">
