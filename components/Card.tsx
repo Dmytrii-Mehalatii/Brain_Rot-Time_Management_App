@@ -1,13 +1,14 @@
 import { useTheme } from "@/hooks/useTheme";
+import type { LucideIcon } from "lucide-react-native";
 import * as LucideIcons from "lucide-react-native";
 import { Text, View } from "react-native";
 
-interface CardProps {
+type CardProps = {
   iconName: keyof typeof LucideIcons;
   isFullWidth?: boolean;
   title: string;
   description: string;
-}
+};
 
 export default function Card({
   iconName,
@@ -17,7 +18,7 @@ export default function Card({
 }: CardProps) {
   const { textColor } = useTheme();
   // eslint-disable-next-line import/namespace
-  const Icon = LucideIcons[iconName] as any;
+  const Icon = LucideIcons[iconName] as LucideIcon | undefined;
 
   const renderDescription = (text: string) => {
     const parts = text.split(/(\d+|two weeks|\d+ km|\d+ kcal)/g);

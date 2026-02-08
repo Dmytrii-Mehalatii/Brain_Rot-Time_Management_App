@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
+import { AppType } from "@/types";
 import { Image, Text, View } from "react-native";
 import CustomFlatList from "./CustomFlatList";
 
@@ -6,7 +7,7 @@ export default function EnemyList({
   data,
   width,
 }: {
-  data: any;
+  data: AppType[];
   width: number;
 }) {
   const { value, textColor } = useTheme();

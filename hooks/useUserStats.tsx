@@ -1,5 +1,13 @@
 import UsageStats from "@/modules/usage-stats";
 import {
+  AppType,
+  DailyStreakType,
+  GenericStatsType,
+  WeeklyAppsTime,
+  WeeklyDataType,
+  WeeklyStreakType,
+} from "@/types";
+import {
   createContext,
   ReactNode,
   useContext,
@@ -7,33 +15,13 @@ import {
   useState,
 } from "react";
 
-export type AppType = {
-  icon: string;
-  appName: string;
-  appIndex: number;
-  seconds: number;
-};
-
-type DailyStreakType = {
-  streak: number;
-  todayMinutes: number;
-  successToday: boolean;
-  limitMinutes: number;
-};
-
-type WeeklyStreakType = {
-  day: string;
-  minutes: number;
-  success: boolean;
-};
-
 type UserStatsContextType = {
-  stats: any;
+  stats: GenericStatsType[];
   formatedTime: string | null;
   timeInMinutes: number;
-  weeklyData: any;
+  weeklyData: WeeklyDataType[];
   weeklyTimeInMinutes: number;
-  weeklyAppsTime: any;
+  weeklyAppsTime: WeeklyAppsTime[];
   dailyStreak: DailyStreakType;
   weeklyStreak: WeeklyStreakType[];
 };

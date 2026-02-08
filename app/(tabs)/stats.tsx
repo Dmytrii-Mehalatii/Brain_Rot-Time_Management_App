@@ -2,6 +2,7 @@ import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
+import { WeeklyDataType } from "@/types";
 import { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -34,7 +35,7 @@ export default function Stats() {
       ...item,
       onPress: () => setSelectedSlice(idx),
     }));
-  }, []);
+  }, [wastedWeeklyTime, savedWeeklyTime]);
 
   return (
     <ScrollView
@@ -73,7 +74,13 @@ export default function Stats() {
             yAxisThickness={0}
             xAxisThickness={0}
             hideRules={true}
-            renderTooltip={(item, index) => {
+            renderTooltip={({
+              item,
+              index,
+            }: {
+              item: WeeklyDataType;
+              index: number;
+            }) => {
               const hours = Math.floor(item.value / 60);
               const minutes = Math.round(item.value % 60);
               return (

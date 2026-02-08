@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
+import { GenericStatsType } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect } from "react";
@@ -15,10 +16,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import CustomFlatList from "./CustomFlatList";
+
 type Props = {
   isVisible: boolean;
   setIsVisible: (v: boolean) => void;
-  stats: any;
+  stats: GenericStatsType[];
   date: "day" | "week";
 };
 
