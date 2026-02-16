@@ -30,7 +30,7 @@ export default function EnemyModal({
   stats,
   date,
 }: Props) {
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
 
   const swapedArray = [...stats.slice(0, 3)];
   [swapedArray[0], swapedArray[1]] = [swapedArray[1], swapedArray[0]];
@@ -113,7 +113,7 @@ export default function EnemyModal({
                           <Text
                             style={{
                               fontFamily: "SpaceGroteskBold",
-                              color: textColor,
+                              color: themeColor,
                             }}
                             className="text-lg">
                             {item.appIndex}
@@ -139,7 +139,7 @@ export default function EnemyModal({
                         <Text
                           style={{
                             fontFamily: "SpaceGroteskRegular",
-                            color: textColor,
+                            color: themeColor,
                           }}
                           className="text-center font-bold mt-1">
                           {hours > 0 ? `${hours}h ` : ""}
@@ -179,7 +179,7 @@ export default function EnemyModal({
                     <Text
                       style={{
                         fontFamily: "SpaceGroteskMedium",
-                        color: textColor,
+                        color: themeColor,
                       }}>
                       {hours}h {minutes}m
                     </Text>

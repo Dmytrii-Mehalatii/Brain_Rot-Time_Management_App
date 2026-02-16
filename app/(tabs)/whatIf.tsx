@@ -5,14 +5,14 @@ import { ScrollView, Text, View } from "react-native";
 
 export default function WhatIf() {
   const { formatedTime } = useUserStats();
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
 
   return (
     <View className="flex-1 mt-8 mx-10 flex-col gap-4 items-center">
       <Text className="font-['SpaceGroteskRegular'] -mb-2 uppercase text-[26px]">
         <Text
           className="font-['SpaceGroteskMedium'] lowercase"
-          style={{ color: textColor }}>
+          style={{ color: themeColor }}>
           {formatedTime}
         </Text>{" "}
         Whats the cost?

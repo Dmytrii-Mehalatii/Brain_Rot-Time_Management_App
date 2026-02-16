@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Layout() {
   const insets = useSafeAreaInsets();
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
   return (
     <Tabs>
       <TabSlot />
@@ -16,7 +16,7 @@ export default function Layout() {
       <TabList
         className="flex border-t-[1px] border-t-primary-700 gap-14 items-center"
         style={{
-          borderTopColor: `${textColor}`,
+          borderTopColor: `${themeColor}`,
           paddingBottom: insets.bottom,
           height: 60 + insets.bottom,
           justifyContent: "center",

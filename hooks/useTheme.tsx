@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 type ThemeContextType = {
   value: number;
   setValue: (v: number) => void;
-  textColor: string;
+  themeColor: string;
 };
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
@@ -20,7 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const [value, setValue] = useState(1);
-  const textColor = themeColors[value];
+  const themeColor = themeColors[value];
 
   const { totalMinutes } = UsageStats.sumTime();
 
@@ -41,7 +41,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [totalMinutes]);
 
   return (
-    <ThemeContext.Provider value={{ value, setValue, textColor }}>
+    <ThemeContext.Provider value={{ value, setValue, themeColor }}>
       {children}
     </ThemeContext.Provider>
   );

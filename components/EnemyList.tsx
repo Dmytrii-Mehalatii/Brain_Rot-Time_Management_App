@@ -10,10 +10,10 @@ export default function EnemyList({
   data: AppType[];
   width: number;
 }) {
-  const { value, textColor } = useTheme();
+  const { value, themeColor } = useTheme();
 
   const getBorderColor = (index: number) => {
-    if (value < 3) {
+    if (value < 4) {
       return index === 0 ? "#730031" : index === 1 ? "#AD154B" : "#D993AC";
     }
     return index === 0 ? "#4F5C4C" : index === 1 ? "#677863" : "#AAC7A4";
@@ -57,7 +57,7 @@ export default function EnemyList({
                 {item.appName}
               </Text>
               <Text
-                style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
+                style={{ fontFamily: "SpaceGroteskMedium", color: themeColor }}
                 className="text-base w-full text-center flex-shrink">
                 {hours > 0 ? hours + "h " : ""}
                 {minutes}m

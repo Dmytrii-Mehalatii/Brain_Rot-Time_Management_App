@@ -8,7 +8,7 @@ export type TabButtonProps = TabTriggerSlotProps & {
 };
 
 export function TabButton({ children, isFocused, ...props }: TabButtonProps) {
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
 
   return (
     <Pressable
@@ -20,7 +20,7 @@ export function TabButton({ children, isFocused, ...props }: TabButtonProps) {
         padding: 10,
       }}>
       {cloneElement(children, {
-        fill: isFocused ? textColor : "#212121",
+        fill: isFocused ? themeColor : "#212121",
         width: isFocused ? 40 : 36,
         height: isFocused ? 40 : 36,
       })}

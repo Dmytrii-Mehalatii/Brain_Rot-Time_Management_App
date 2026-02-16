@@ -16,7 +16,7 @@ export default function Card({
   title,
   description,
 }: CardProps) {
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
   // eslint-disable-next-line import/namespace
   const Icon = LucideIcons[iconName] as LucideIcon | undefined;
 
@@ -27,7 +27,7 @@ export default function Card({
         key={i}
         style={
           /(\d+|two weeks|km|kcal)/.test(part)
-            ? { color: textColor, fontWeight: "600" }
+            ? { color: themeColor, fontWeight: "600" }
             : {}
         }>
         {part}
@@ -37,7 +37,7 @@ export default function Card({
 
   return (
     <View
-      style={{ borderColor: textColor }}
+      style={{ borderColor: themeColor }}
       className={`border-[2px] rounded-lg p-3 h-[100px] gap-3 ${isFullWidth ? "w-full" : "flex-1"}`}>
       <View className="flex-row items-center gap-2">
         {Icon && (

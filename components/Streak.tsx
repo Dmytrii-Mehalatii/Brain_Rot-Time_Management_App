@@ -5,7 +5,7 @@ import { Image, Text, View } from "react-native";
 
 export default function Streak() {
   const { dailyStreak, weeklyStreak } = useUserStats();
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
 
   return (
     <View className="px-6">
@@ -13,7 +13,7 @@ export default function Streak() {
         <View className="w-full flex-shrink">
           <Text
             className="font-['SpaceGroteskBold'] text-6xl "
-            style={{ color: textColor }}>
+            style={{ color: themeColor }}>
             {dailyStreak.streak}
           </Text>
           <Text className="font-['SpaceGroteskMedium'] text-2xl">

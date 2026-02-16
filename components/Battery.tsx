@@ -9,7 +9,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
 
 export default function Battery() {
-  const { value, textColor } = useTheme();
+  const { value, themeColor } = useTheme();
   const maxBattery = 6;
   return (
     <View className="w-fit flex-shrink flex-row justify-center items-center">
@@ -17,7 +17,7 @@ export default function Battery() {
         {Array.from({ length: maxBattery - value + 1 }).map((_, index) => (
           <View
             key={index}
-            style={{ backgroundColor: textColor }}
+            style={{ backgroundColor: themeColor }}
             className="w-full max-w-[18.5px] h-full flex-shrink rounded-sm"
           />
         ))}

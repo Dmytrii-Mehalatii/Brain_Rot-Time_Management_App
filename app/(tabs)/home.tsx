@@ -11,7 +11,7 @@ import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 
 export default function Home() {
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
   const { stats, formatedTime, timeInMinutes } = useUserStats();
 
   const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
@@ -61,7 +61,7 @@ export default function Home() {
             style={{ fontFamily: "SpaceGroteskMedium" }}
             className="text-[28px] uppercase text-[#212121]">
             <Text
-              style={{ color: textColor }}
+              style={{ color: themeColor }}
               className="w-full text-center lowercase ">
               {formatedTime}
             </Text>{" "}
@@ -74,7 +74,7 @@ export default function Home() {
               className="text-xl flex-2/3 text-center">
               Your Brain is{" "}
               <Text
-                style={{ fontFamily: "SpaceGroteskBold", color: textColor }}>
+                style={{ fontFamily: "SpaceGroteskBold", color: themeColor }}>
                 {Math.round(baseFreshness * 100)}%
               </Text>{" "}
               fresh
@@ -91,7 +91,7 @@ export default function Home() {
             </Text>
             <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
               <Text
-                style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
+                style={{ fontFamily: "SpaceGroteskMedium", color: themeColor }}
                 className="underline">
                 see more
               </Text>

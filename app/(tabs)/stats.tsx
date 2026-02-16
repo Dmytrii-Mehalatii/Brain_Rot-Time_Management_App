@@ -10,7 +10,7 @@ import { BarChart, PieChart } from "react-native-gifted-charts";
 
 export default function Stats() {
   const { weeklyData, weeklyTimeInMinutes, weeklyAppsTime } = useUserStats();
-  const { textColor } = useTheme();
+  const { themeColor } = useTheme();
   const avgTimeSpend = weeklyTimeInMinutes / 7;
   const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
 
@@ -74,18 +74,14 @@ export default function Stats() {
             yAxisThickness={0}
             xAxisThickness={0}
             hideRules={true}
-            renderTooltip={({
-              item,
-              index,
-            }: {
-              item: WeeklyDataType;
-              index: number;
-            }) => {
+            renderTooltip={(item: WeeklyDataType) => {
+              if (!item) return null;
+
               const hours = Math.floor(item.value / 60);
               const minutes = Math.round(item.value % 60);
+
               return (
                 <View
-                  key={index}
                   style={{
                     position: "absolute",
                     left: -3,
@@ -150,9 +146,7 @@ export default function Stats() {
             </Text>
           </View>
         </View>
-
         <View className="bg-black h-[1.25px] my-10" />
-
         <View className="flex">
           <View className="w-full flex-row items-center mb-4">
             <Text className="w-full flex-shrink text-xl font-['SpaceGroteskRegular']">
@@ -160,7 +154,7 @@ export default function Stats() {
             </Text>
             <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
               <Text
-                style={{ fontFamily: "SpaceGroteskMedium", color: textColor }}
+                style={{ fontFamily: "SpaceGroteskMedium", color: themeColor }}
                 className="underline">
                 see more
               </Text>
