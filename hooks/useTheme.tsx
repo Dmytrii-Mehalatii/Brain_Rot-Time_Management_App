@@ -11,8 +11,8 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const themeColors: Record<number, string> = {
-    1: "#730031",
-    2: "#9D1344",
+    1: "#9D1344",
+    2: "#AD154B",
     3: "#AD154B",
     4: "#859B80",
     5: "#677863",

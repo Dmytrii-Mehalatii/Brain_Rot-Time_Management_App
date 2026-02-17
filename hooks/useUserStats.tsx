@@ -70,7 +70,6 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
 
     const handleGetWeeklyTimeInMinutes = () => {
       const weeklyData = UsageStats.getWeeklyTime();
-      weeklyData[1].value = 100;
       setWeeklyData(weeklyData);
       let sum = 0;
       for (let i = 0; i < weeklyData.length; i++) {
