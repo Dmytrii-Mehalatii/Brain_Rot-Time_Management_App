@@ -3,12 +3,13 @@ import Battery from "@/components/Battery";
 import BrainMap from "@/components/BrainMap";
 import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
+import MainImage from "@/components/MainImage";
 import Streak from "@/components/Streak";
 import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 export default function Home() {
   const { themeColor } = useTheme();
@@ -48,12 +49,8 @@ export default function Home() {
         <Streak />
       </BaseModal>
 
-      <View className="h-full flex-shrink">
-        <Image
-          source={require("@/assets/images/brain2.png")}
-          style={{ width: "110%", height: undefined, aspectRatio: 1 }}
-          resizeMode="contain"
-        />
+      <View className="h-full flex-shrink -mt-10">
+        <MainImage />
       </View>
       <View className="w-full px-12 py-3 flex-col gap-8">
         <View className="w-full flex-col gap-5">
@@ -64,7 +61,7 @@ export default function Home() {
               style={{ color: themeColor }}
               className="w-full text-center lowercase ">
               {formatedTime}
-            </Text>{" "}
+            </Text>
             wasted today
           </Text>
           <View className="flex-row w-full items-center justify-center gap-3">
@@ -89,13 +86,20 @@ export default function Home() {
               style={{ fontFamily: "SpaceGroteskRegular" }}>
               Todays Biggest Enemies:{" "}
             </Text>
-            <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
-              <Text
-                style={{ fontFamily: "SpaceGroteskMedium", color: themeColor }}
-                className="underline">
-                see more
-              </Text>
-            </Pressable>
+            {stats.length < 4 ? (
+              ""
+            ) : (
+              <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
+                <Text
+                  style={{
+                    fontFamily: "SpaceGroteskMedium",
+                    color: themeColor,
+                  }}
+                  className="underline">
+                  see more
+                </Text>
+              </Pressable>
+            )}
           </View>
 
           <EnemyList

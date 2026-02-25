@@ -152,13 +152,20 @@ export default function Stats() {
             <Text className="w-full flex-shrink text-xl font-['SpaceGroteskRegular']">
               Weekly Biggest Enemies:
             </Text>
-            <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
-              <Text
-                style={{ fontFamily: "SpaceGroteskMedium", color: themeColor }}
-                className="underline">
-                see more
-              </Text>
-            </Pressable>
+            {weeklyAppsTime.length < 4 ? (
+              ""
+            ) : (
+              <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
+                <Text
+                  style={{
+                    fontFamily: "SpaceGroteskMedium",
+                    color: themeColor,
+                  }}
+                  className="underline">
+                  see more
+                </Text>
+              </Pressable>
+            )}
           </View>
           <View className="w-full flex-row items-stretch">
             <EnemyList

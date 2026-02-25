@@ -1,10 +1,3 @@
-// 1 - 2
-// 2 - 3
-// 3 - 4.5
-// 4.5 - 6
-// 6- 7
-// 7+
-
 import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
 
