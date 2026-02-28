@@ -1,9 +1,8 @@
-import { useRouter } from "expo-router";
+import UsageStats from "@/modules/usage-stats";
 import { Image, Pressable, Text, View } from "react-native";
 import "./global.css";
 
 export default function Index() {
-  const router = useRouter();
   return (
     <View
       style={{
@@ -47,7 +46,7 @@ export default function Index() {
       </View>
       <Pressable
         className="w-fit mt-8 bg-primary-500 px-8 py-4 rounded-md border-[1.5px] border-primary-800"
-        onPress={() => router.navigate("/(tabs)/home")}>
+        onPress={() => UsageStats.requestPermission()}>
         <Text className="color-white text-center font-['SpaceGroteskMedium'] text-xl">
           Grand Permission
         </Text>
