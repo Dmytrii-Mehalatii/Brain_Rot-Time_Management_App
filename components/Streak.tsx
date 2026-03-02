@@ -1,11 +1,9 @@
 import BrainIcon from "@/assets/icons/brain_icon.svg";
-import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { Image, Text, View } from "react-native";
 
 export default function Streak() {
   const { dailyStreak, weeklyStreak } = useUserStats();
-  const { themeColor } = useTheme();
 
   return (
     <View className="px-6">
@@ -13,7 +11,7 @@ export default function Streak() {
         <View className="w-full flex-shrink">
           <Text
             className="font-['SpaceGroteskBold'] text-6xl "
-            style={{ color: themeColor }}>
+            style={{ color: dailyStreak.streak > 0 ? "#9D1344" : "#677863" }}>
             {dailyStreak.streak}
           </Text>
           <Text className="font-['SpaceGroteskMedium'] text-2xl">
@@ -34,8 +32,8 @@ export default function Streak() {
           />
         ) : (
           <Image
-            source={require("@/assets/images/streakBrain.png")}
-            style={{ width: "45%", height: undefined, aspectRatio: 1 }}
+            source={require("@/assets/images/brokenStreakBrain.png")}
+            style={{ width: "50%", height: undefined, aspectRatio: 1 }}
             resizeMode="contain"
           />
         )}

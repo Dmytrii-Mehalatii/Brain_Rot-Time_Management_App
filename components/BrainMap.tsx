@@ -6,6 +6,7 @@ import BottomBrain from "./BrainParts/Bottom";
 import MiddleBottomBrain from "./BrainParts/MiddleBottom";
 import MiddleTopBrain from "./BrainParts/MiddleTop";
 import TopBrain from "./BrainParts/Top";
+import Button from "./Button";
 export default function BrainMap() {
   const { topBrainPart, secondBrainPart, thirdBrainPart, bottomBrainPart } =
     useUserApps();
@@ -39,7 +40,7 @@ export default function BrainMap() {
     thirdBrainPart,
     bottomBrainPart,
   ]);
-  //3C79C9 for frozen part 68A5F4 second frozen
+
   function getBrainPartColor(
     value: number,
     part:
@@ -168,22 +169,19 @@ export default function BrainMap() {
         </Pressable>
       </View>
       <View className="flex flex-row justify-between mx-6 mb-4">
-        <Pressable
+        <Button
+          title="Brain Info"
+          variant="info"
+          active={infoBrainPartState ? true : false}
           onPress={() => setInfoBrainPartState(true)}
-          className={`flex items-center justify-center rounded-md ${infoBrainPartState ? "bg-primary-500" : ""} border-primary-500 border-2 w-[120px] h-10`}>
-          <Text
-            className={`${infoBrainPartState ? "text-white" : ""} font-['SpaceGroteskMedium']`}>
-            Brain Info
-          </Text>
-        </Pressable>
-        <Pressable
+        />
+
+        <Button
+          title="Color Info"
+          variant="info"
+          active={infoBrainPartState ? false : true}
           onPress={() => setInfoBrainPartState(false)}
-          className={`flex items-center justify-center rounded-md ${!infoBrainPartState ? "bg-primary-500" : ""} border-primary-500 border-2 w-[120px] h-10`}>
-          <Text
-            className={`${!infoBrainPartState ? "text-white" : ""} font-['SpaceGroteskMedium']`}>
-            Color Info
-          </Text>
-        </Pressable>
+        />
       </View>
       <View className="flex-row gap-4 mx-6 border-[#ad144a] rounded-md border-2 px-3 py-2 justify-between items-center ">
         {infoBrainPartState ? (

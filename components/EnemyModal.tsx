@@ -186,16 +186,18 @@ export default function EnemyModal({
                   </View>
                 )}
               />
-              <LinearGradient
-                colors={["transparent", "rgba(0,0,0,0.05)"]}
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 40,
-                }}
-              />
+              {stats.length > 8 && (
+                <LinearGradient
+                  colors={["transparent", "rgba(0,0,0,0.05)"]}
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 40,
+                  }}
+                />
+              )}
             </View>
           </Animated.View>
         </GestureHandlerRootView>

@@ -1,10 +1,10 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
+type ActiveModal = "brain" | "streak" | "weeklyEnemies" | "enemies" | null;
+
 type ModalContextProps = {
-  isBrainModalVisible: boolean;
-  setIsBrainModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  isStreakModalVisible: boolean;
-  setIsStreakModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  activeModal: ActiveModal;
+  setActiveModal: React.Dispatch<React.SetStateAction<ActiveModal>>;
 };
 
 const ModalContext = createContext<ModalContextProps | null>(null);
@@ -14,22 +14,19 @@ export default function BrainMapProvider({
 }: {
   children: ReactNode;
 }) {
-  const [isBrainModalVisible, setIsBrainModalVisible] = useState(false);
-  const [isStreakModalVisible, setIsStreakModalVisible] = useState(false);
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
+
   return (
     <ModalContext.Provider
       value={{
-        isBrainModalVisible,
-        setIsBrainModalVisible,
-        isStreakModalVisible,
-        setIsStreakModalVisible,
+        activeModal,
+        setActiveModal,
       }}>
       {children}
     </ModalContext.Provider>
   );
 }
 
-//useModal
 export function useModal() {
   const ctx = useContext(ModalContext);
   if (!ctx) {

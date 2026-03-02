@@ -3,10 +3,8 @@ import BrainMapProvider from "@/hooks/useModal";
 import { ThemeProvider } from "@/hooks/useTheme";
 import UserAppsProvider from "@/hooks/useUserAppsType";
 import { UserStatsProvider } from "@/hooks/useUserStats";
-import UsageStats from "@/modules/usage-stats";
 import { useFonts } from "expo-font";
-import { Stack, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "./global.css";
 
@@ -17,15 +15,8 @@ export default function RootLayout() {
     SpaceGroteskBold: require("../assets/fonts/SpaceGroteskBold.ttf"),
   });
 
-  const router = useRouter();
-  useEffect(() => {
-    if (UsageStats.hasPermission()) {
-      router.push("/(tabs)/home");
-    } else {
-      router.push("/");
-    }
-  });
   if (!fontsLoaded) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>

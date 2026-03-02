@@ -11,6 +11,8 @@ const brainImages = [
   require("@/assets/images/mainBrain/6_stage_Brain.png"),
 ];
 
+const ImageWidthPercentage = [130, 125, 125, 110, 115, 120];
+
 export default function MainImage() {
   const theme = useTheme();
 
@@ -19,10 +21,17 @@ export default function MainImage() {
     return brainImages[idx] ?? brainImages[brainImages.length - 1];
   }, [theme.value]);
 
+  const imageWidth = useMemo(() => {
+    const idx = theme.value - 1;
+    return (
+      ImageWidthPercentage[idx] ?? ImageWidthPercentage[brainImages.length - 1]
+    );
+  }, [theme.value]);
+
   return (
     <Image
       source={source}
-      style={{ width: "140%", height: undefined, aspectRatio: 1 }}
+      style={{ width: `${imageWidth}%`, height: undefined, aspectRatio: 1 }}
       resizeMode="contain"
     />
   );

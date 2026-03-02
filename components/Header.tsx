@@ -9,7 +9,7 @@ type HeaderProps = {
 };
 
 export default function Header({ title, brainIcon }: HeaderProps) {
-  const { setIsBrainModalVisible, setIsStreakModalVisible } = useModal();
+  const { setActiveModal } = useModal();
   return (
     <View className="flex-1 flex-row gap-5 px-5">
       <Text
@@ -18,8 +18,7 @@ export default function Header({ title, brainIcon }: HeaderProps) {
         {title}
       </Text>
 
-      <Pressable
-        onPress={() => setIsStreakModalVisible((prev: boolean) => !prev)}>
+      <Pressable onPress={() => setActiveModal("streak")}>
         <Calendar
           width={32}
           height={32}
@@ -28,8 +27,7 @@ export default function Header({ title, brainIcon }: HeaderProps) {
       </Pressable>
 
       {brainIcon && (
-        <Pressable
-          onPress={() => setIsBrainModalVisible((prev: boolean) => !prev)}>
+        <Pressable onPress={() => setActiveModal("brain")}>
           <BrainIcon
             color="#212121"
             width={32}

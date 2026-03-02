@@ -1,5 +1,6 @@
 import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
+import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { WeeklyDataType } from "@/types";
@@ -11,8 +12,10 @@ import { BarChart, PieChart } from "react-native-gifted-charts";
 export default function Stats() {
   const { weeklyData, weeklyTimeInMinutes, weeklyAppsTime } = useUserStats();
   const { themeColor } = useTheme();
+
   const avgTimeSpend = weeklyTimeInMinutes / 7;
-  const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
+
+  const { activeModal, setActiveModal } = useModal();
 
   const weeklyTimeWithoutSleepInMinutes = 7140; //avg sleeping time is 7 h per day
 
@@ -42,15 +45,12 @@ export default function Stats() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}>
       <View style={{ paddingHorizontal: 40, paddingVertical: 32 }}>
-        {isEnemiesModalVisible && (
-          <EnemyModal
-            isVisible={isEnemiesModalVisible}
-            setIsVisible={setIsEnemiesModalVisible}
-            stats={weeklyAppsTime}
-            date="week"
-          />
-        )}
-        {/* <Text>Permission Status: {String(UsageStats.hasPermission())}</Text> */}
+        <EnemyModal
+          isVisible={activeModal === "weeklyEnemies"}
+          setIsVisible={() => setActiveModal(null)}
+          stats={weeklyAppsTime}
+          date="week"
+        />
         <Text className=" text-[#212121] font-['SpaceGroteskMedium'] text-4xl">
           {Math.floor(avgTimeSpend / 60)}h {Math.round(avgTimeSpend % 60)}m
         </Text>
@@ -155,7 +155,7 @@ export default function Stats() {
             {weeklyAppsTime.length < 4 ? (
               ""
             ) : (
-              <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
+              <Pressable onPress={() => setActiveModal("weeklyEnemies")}>
                 <Text
                   style={{
                     fontFamily: "SpaceGroteskMedium",

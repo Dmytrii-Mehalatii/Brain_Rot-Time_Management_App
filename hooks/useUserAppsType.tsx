@@ -28,23 +28,23 @@ export default function UserAppsProvider({
 }) {
   const { stats } = useUserStats();
 
-  const CATEGORIES = [
-    "Game", //
-    "Audio", //
-    "Video", //
-    "Image", //
-    "Social", //
-    "News", //
-    "Maps", //
-    "Productivity", //
-    "Accessibility", //
-    "Education", //
-    "Finance", //
-    "Shopping", //
-    "Health", //
-    "Undefined",
-  ];
   const appData = useMemo(() => {
+    const CATEGORIES = [
+      "Game",
+      "Audio",
+      "Video",
+      "Image",
+      "Social",
+      "News",
+      "Maps",
+      "Productivity",
+      "Accessibility",
+      "Education",
+      "Finance",
+      "Shopping",
+      "Health",
+      "Undefined",
+    ];
     const timeMap: Record<string, number> = {};
 
     stats.forEach((stat: { category: string | number; seconds: number }) => {

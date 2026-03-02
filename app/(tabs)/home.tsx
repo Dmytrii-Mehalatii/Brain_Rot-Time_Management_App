@@ -8,48 +8,40 @@ import Streak from "@/components/Streak";
 import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
-import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 export default function Home() {
   const { themeColor } = useTheme();
   const { stats, formatedTime, timeInMinutes } = useUserStats();
 
-  const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
-  const {
-    isBrainModalVisible,
-    setIsBrainModalVisible,
-    isStreakModalVisible,
-    setIsStreakModalVisible,
-  } = useModal();
+  // const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
+  const { activeModal, setActiveModal } = useModal();
 
   const MAX_MINUTES = 540;
   const baseFreshness = 1 - Math.min(timeInMinutes / MAX_MINUTES, 1);
 
   return (
     <View className="flex-1 justify-center py-10 items-center">
-      {isEnemiesModalVisible && (
-        <EnemyModal
-          isVisible={isEnemiesModalVisible}
-          setIsVisible={setIsEnemiesModalVisible}
-          stats={stats}
-          date="day"
-        />
-      )}
+      <EnemyModal
+        isVisible={activeModal === "enemies"}
+        setIsVisible={() => setActiveModal(null)}
+        stats={stats}
+        date="day"
+      />
 
       <BaseModal
-        visible={isBrainModalVisible}
-        onClose={() => setIsBrainModalVisible(false)}>
+        visible={activeModal === "brain"}
+        onClose={() => setActiveModal(null)}>
         <BrainMap />
       </BaseModal>
 
       <BaseModal
-        visible={isStreakModalVisible}
-        onClose={() => setIsStreakModalVisible(false)}>
+        visible={activeModal === "streak"}
+        onClose={() => setActiveModal(null)}>
         <Streak />
       </BaseModal>
 
-      <View className="h-full flex-shrink -mt-10">
+      <View className="h-full flex-shrink">
         <MainImage />
       </View>
       <View className="w-full px-12 py-3 flex-col gap-8">
@@ -61,7 +53,7 @@ export default function Home() {
               style={{ color: themeColor }}
               className="w-full text-center lowercase ">
               {formatedTime}
-            </Text>
+            </Text>{" "}
             wasted today
           </Text>
           <View className="flex-row w-full items-center justify-center gap-3">
@@ -89,7 +81,7 @@ export default function Home() {
             {stats.length < 4 ? (
               ""
             ) : (
-              <Pressable onPress={() => setIsEnemiesModalVisible(true)}>
+              <Pressable onPress={() => setActiveModal("enemies")}>
                 <Text
                   style={{
                     fontFamily: "SpaceGroteskMedium",
