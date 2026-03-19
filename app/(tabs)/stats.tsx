@@ -85,7 +85,7 @@ export default function Stats() {
                   style={{
                     position: "absolute",
                     left: -3,
-                    top: item.value >= 520 ? 12 : -32,
+                    top: item.value >= 240 ? 12 : -32,
                     transform: [{ translateX: -20 }],
                     backgroundColor: item.value > 300 ? "#4F5C4C" : "#AD154B",
                     paddingVertical: 4,
