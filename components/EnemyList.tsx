@@ -1,19 +1,23 @@
 import { useTheme } from "@/hooks/useTheme";
 import { AppType } from "@/types";
-import { useMemo } from "react";
-import { Image, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Image, LayoutChangeEvent, Text, View } from "react-native";
 import CustomFlatList from "./CustomFlatList";
 
 type MaybeApp = AppType | { placeholder: true; seconds?: number };
 
-export default function EnemyList({
-  data,
-  width,
-}: {
-  data: AppType[];
-  width: number;
-}) {
+interface RenderItemInfo {
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+export default function EnemyList({ data }: { data: AppType[] }) {
   const { value, themeColor } = useTheme();
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  const GAP = 8;
+  const itemWidth = containerWidth > 0 ? (containerWidth - GAP * 2) / 3 : 0;
 
   const displayData = useMemo<MaybeApp[]>(() => {
     const items: MaybeApp[] = [...data];
@@ -21,14 +25,15 @@ export default function EnemyList({
     for (let i = 0; i < missing; i++) {
       items.push({ placeholder: true, seconds: 0 });
     }
-    return items;
+    return items.slice(0, 3);
   }, [data]);
 
-  const getBorderColor = (index: number, isPlaceholder = false) => {
-    if (isPlaceholder) {
-      return "#cccccc";
-    }
+  const handleLayout = (event: LayoutChangeEvent) => {
+    setContainerWidth(event.nativeEvent.layout.width);
+  };
 
+  const getBorderColor = (index: number, isPlaceholder = false) => {
+    if (isPlaceholder) return "#cccccc";
     if (value < 4) {
       return index === 0 ? "#730031" : index === 1 ? "#AD154B" : "#D993AC";
     }
@@ -36,99 +41,70 @@ export default function EnemyList({
   };
 
   return (
-    <View>
-      <CustomFlatList<MaybeApp>
-        data={displayData}
-        isHorizontal={true}
-        isScrollEnabled={false}
-        renderItem={(item, { hours, minutes }) => {
-          if ("placeholder" in item) {
+    <View
+      onLayout={handleLayout}
+      className="w-full flex-row">
+      {containerWidth > 0 && (
+        <CustomFlatList<MaybeApp>
+          data={displayData}
+          isHorizontal={true}
+          isScrollEnabled={false}
+          renderItem={(
+            item: AppType,
+            { hours, minutes }: RenderItemInfo,
+            index: number,
+          ) => {
+            const isLast = index === 2;
+            const borderColor =
+              "placeholder" in item
+                ? getBorderColor(0, true)
+                : getBorderColor(item.appIndex - 1);
+
             return (
               <View
-                className="flex-row items-center justify-center rounded-md"
+                className="flex-row items-center rounded-md"
                 style={{
-                  width: width,
+                  width: itemWidth,
+                  marginRight: isLast ? 0 : GAP,
                   borderWidth: 2,
-                  marginRight: 8,
+                  borderColor,
                   paddingHorizontal: 4,
-                  height: "auto",
-                  borderColor: getBorderColor(0, true),
-                  backgroundColor: "#f5f5f5",
+                  backgroundColor:
+                    "placeholder" in item ? "#f5f5f5" : "transparent",
+                  height: 50,
                 }}>
-                <View className="w-6 h-6 bg-[#ccc] rounded-full" />
+                {"placeholder" in item ? (
+                  <View className="w-5 h-5 bg-[#ccc] rounded-full" />
+                ) : (
+                  <Image
+                    source={{ uri: `data:image/png;base64,${item.icon}` }}
+                    style={{ width: 20, height: 20 }}
+                  />
+                )}
 
-                <View className="py-1 flex w-full flex-shrink">
+                <View className="flex-1 justify-center">
                   <Text
-                    className="w-full text-center flex-shrink ml-1"
                     numberOfLines={1}
-                    ellipsizeMode="tail"
-                    style={{
-                      fontSize: 14,
-                      maxWidth: 60,
-                      fontFamily: "SpaceGroteskRegular",
-                    }}>
-                    Empty
+                    className="text-center"
+                    style={{ fontSize: 14, fontFamily: "SpaceGroteskRegular" }}>
+                    {"placeholder" in item ? "Empty" : item.appName}
                   </Text>
                   <Text
+                    className="text-center"
                     style={{
+                      fontSize: 14,
                       fontFamily: "SpaceGroteskMedium",
-                    }}
-                    className="text-base w-full text-center flex-shrink color-[#7e7e7e]">
-                    {hours > 0 ? hours + "h " : ""}
+                      color: "placeholder" in item ? "#7e7e7e" : themeColor,
+                    }}>
+                    {hours > 0 ? `${hours}h ` : ""}
                     {minutes}m
                   </Text>
                 </View>
               </View>
             );
-          }
-
-          const borderColor = getBorderColor(item.appIndex - 1);
-
-          return (
-            <View
-              className="flex-row items-center justify-center rounded-md"
-              style={{
-                width: width,
-                borderWidth: 2,
-                marginRight: 8,
-                paddingHorizontal: 4,
-                height: "auto",
-                borderColor,
-              }}>
-              <Image
-                source={{ uri: `data:image/png;base64,${item.icon}` }}
-                style={{
-                  width: 24,
-                  height: 24,
-                }}
-              />
-
-              <View className="py-1 flex w-full flex-shrink">
-                <Text
-                  className="w-full text-center flex-shrink"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                  style={{
-                    fontSize: 14,
-                    maxWidth: 60,
-                    fontFamily: "SpaceGroteskRegular",
-                  }}>
-                  {item.appName}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "SpaceGroteskMedium",
-                    color: themeColor,
-                  }}
-                  className="text-base w-full text-center flex-shrink">
-                  {hours > 0 ? hours + "h " : ""}
-                  {minutes}m
-                </Text>
-              </View>
-            </View>
-          );
-        }}
-      />
+          }}
+        />
+      )}
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
 import { useMemo } from "react";
-import { Image } from "react-native";
+import { Dimensions, Image } from "react-native";
 
 const brainImages = [
   require("@/assets/images/mainBrain/1_stage_Brain.png"),
@@ -11,7 +11,10 @@ const brainImages = [
   require("@/assets/images/mainBrain/6_stage_Brain.png"),
 ];
 
-const ImageWidthPercentage = [130, 125, 125, 110, 115, 120];
+const { width } = Dimensions.get("window");
+const isSmall = width < 380;
+
+const ImageWidthPercentage = [isSmall ? 120 : 130, 125, 125, 110, 115, 120];
 
 export default function MainImage() {
   const theme = useTheme();
