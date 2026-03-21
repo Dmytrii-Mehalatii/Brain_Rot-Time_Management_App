@@ -4,14 +4,15 @@ import { View } from "react-native";
 export default function Battery() {
   const { value, themeColor } = useTheme();
   const maxBattery = 6;
+
   return (
     <View className="w-fit flex-shrink flex-row justify-center items-center">
-      <View className="flex-row w-[120px] h-10 gap-1 p-1 border-[#212121] rounded-md border-[1.5px]">
+      <View className="flex-row w-[90%] h-10 gap-1 p-1 border-[#212121] rounded-md border-[1.5px]">
         {Array.from({ length: maxBattery - value + 1 }).map((_, index) => (
           <View
             key={index}
             style={{ backgroundColor: themeColor }}
-            className="w-full max-w-[18.5px] h-full flex-shrink rounded-sm"
+            className={`w-full max-w-[14.20%] h-full flex-shrink rounded-sm`}
           />
         ))}
         <View className=" w-full h-full flex-shrink rounded-sm" />

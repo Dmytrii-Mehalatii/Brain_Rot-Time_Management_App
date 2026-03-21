@@ -9,7 +9,6 @@ import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
   const { themeColor } = useTheme();
@@ -25,7 +24,7 @@ export default function Home() {
   const isSmall = width < 380;
 
   return (
-    <SafeAreaView className="flex-1 justify-center items-center">
+    <View className="flex-1 justify-center items-center">
       <ScrollView className="w-full h-full">
         <View>
           <EnemyModal
@@ -47,19 +46,13 @@ export default function Home() {
             <Streak />
           </BaseModal>
 
-          {isSmall ? (
-            <View className="h-[300px] -mt-14">
-              <MainImage />
-            </View>
-          ) : (
-            <View className="h-full flex-shrink">
-              <MainImage />
-            </View>
-          )}
+          <View className="w-full flex-shrink">
+            <MainImage />
+          </View>
 
           <View
-            className={`w-full ${isSmall ? "px-8 gap-4" : "px-12 gap-8"} py-3 flex-col`}>
-            <View className="w-full flex-col gap-5">
+            className={`w-full ${isSmall ? "px-8 gap-4" : "px-12 gap-6"} py-3 flex-col`}>
+            <View className="w-full flex-col gap-6">
               <Text
                 style={{ fontFamily: "SpaceGroteskMedium" }}
                 className={`${isSmall ? "text-3xl" : "text-[28px]"} uppercase text-[#212121]`}>
@@ -70,11 +63,11 @@ export default function Home() {
                 </Text>{" "}
                 wasted today
               </Text>
-              <View className="flex-row w-full items-center justify-center gap-3">
+              <View className="flex-row w-full items-center justify-start">
                 <Battery />
                 <Text
                   style={{ fontFamily: "SpaceGroteskRegular" }}
-                  className={`${isSmall ? " text-left" : "text-center"} text-xl flex-2/3`}>
+                  className="ml-2 text-left text-xl w-full flex-shrink">
                   Your energy:{"  "}
                   <Text
                     style={{
@@ -116,6 +109,6 @@ export default function Home() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
