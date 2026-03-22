@@ -1,7 +1,7 @@
 import { getFunnyQuote } from "@/hooks/quoteProvider";
 import { useUserApps } from "@/hooks/useUserAppsType";
 import { useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Dimensions, Pressable, Text, View } from "react-native";
 import BottomBrain from "./BrainParts/Bottom";
 import MiddleBottomBrain from "./BrainParts/MiddleBottom";
 import MiddleTopBrain from "./BrainParts/MiddleTop";
@@ -19,6 +19,9 @@ export default function BrainMap() {
     | "bottomBrainPart"
     | ""
   >("");
+
+  const { width } = Dimensions.get("window");
+  const isSmall = width < 380;
 
   const activePart = useMemo(() => {
     switch (brainPart) {
@@ -228,9 +231,12 @@ export default function BrainMap() {
               ].map((item) => (
                 <View
                   key={item.label}
-                  className="flex-row items-center gap-x-3 h-10">
-                  <View className={`w-7 h-7 rounded-md ${item.color}`} />
-                  <Text className="text-md font-['SpaceGroteskRegular'] text-gray-800 max-w-[92px]">
+                  className={`flex-row items-center ${isSmall ? "gap-x-2" : "gap-x-3"} h-10`}>
+                  <View
+                    className={`${isSmall ? "w-5 h-5" : "w-7 h-7"} rounded-md ${item.color}`}
+                  />
+                  <Text
+                    className={`${isSmall ? "text-base leading-5 max-w-[80px]" : "text-md max-w-[92px]"} font-['SpaceGroteskRegular'] text-gray-800`}>
                     {item.label}
                   </Text>
                 </View>
@@ -245,9 +251,12 @@ export default function BrainMap() {
               ].map((item) => (
                 <View
                   key={item.label}
-                  className="flex-row items-center gap-x-3 h-10">
-                  <View className={`w-7 h-7 rounded-md ${item.color}`} />
-                  <Text className="text-md font-['SpaceGroteskRegular'] text-gray-800 max-w-[92px]">
+                  className={`flex-row items-center ${isSmall ? "gap-x-2" : "gap-x-3"} h-10`}>
+                  <View
+                    className={`${isSmall ? "w-5 h-5" : "w-7 h-7"} rounded-md ${item.color}`}
+                  />
+                  <Text
+                    className={`${isSmall ? "text-base leading-5 max-w-[80px]" : "text-md max-w-[92px]"} font-['SpaceGroteskRegular'] text-gray-800`}>
                     {item.label}
                   </Text>
                 </View>

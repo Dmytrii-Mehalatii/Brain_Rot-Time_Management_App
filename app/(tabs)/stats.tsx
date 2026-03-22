@@ -173,7 +173,7 @@ export default function Stats() {
         </View>
         <View className="bg-black h-[1.25px] my-10" />
         <View className="flex">
-          <View className="w-full flex-row items-center mb-4">
+          <View className="w-full flex-row items-center mb-3">
             <Text className="w-full flex-shrink text-xl font-['SpaceGroteskRegular']">
               Weekly Biggest Enemies:
             </Text>
@@ -193,10 +193,7 @@ export default function Stats() {
             )}
           </View>
           <View className="w-full flex-row items-stretch">
-            <EnemyList
-              data={weeklyAppsTime.slice(0, 3)}
-              width={104}
-            />
+            <EnemyList data={weeklyAppsTime.slice(0, 3)} />
           </View>
         </View>
       </View>
