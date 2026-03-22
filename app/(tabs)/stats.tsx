@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import useUserStats from "@/hooks/useUserStats";
 import { WeeklyDataType } from "@/types";
 import { useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, useWindowDimensions, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { BarChart, PieChart } from "react-native-gifted-charts";
 
@@ -40,70 +40,95 @@ export default function Stats() {
     }));
   }, [wastedWeeklyTime, savedWeeklyTime]);
 
+  const { width: screenWidth } = useWindowDimensions();
+  const isSmall = screenWidth < 380;
+
+  const chartContainerWidth = screenWidth - 80;
+  const numberOfBars = 7;
+  const barWidth = isSmall ? 30 : 35;
+
+  const totalBarWidth = barWidth * numberOfBars;
+  const remainingSpace = chartContainerWidth - totalBarWidth;
+  const dynamicSpacing = remainingSpace / (numberOfBars + 1);
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}>
-      <View style={{ paddingHorizontal: 40, paddingVertical: 32 }}>
+      <View className={`flex-1 ${isSmall ? "px-8" : "px-12"} flex-col`}>
         <EnemyModal
           isVisible={activeModal === "weeklyEnemies"}
           setIsVisible={() => setActiveModal(null)}
           stats={weeklyAppsTime}
           date="week"
         />
-        <Text className=" text-[#212121] font-['SpaceGroteskMedium'] text-4xl">
+        <Text className=" text-[#212121] font-['SpaceGroteskMedium'] text-4xl mt-8">
           {Math.floor(avgTimeSpend / 60)}h {Math.round(avgTimeSpend % 60)}m
         </Text>
         <Text className="text-[#212121] font-['SpaceGroteskRegular'] text-2xl">
           Daily average
         </Text>
-        <View style={{ marginTop: 20, marginLeft: -55, width: "125%" }}>
-          <BarChart
-            data={weeklyData.map((item) => ({
-              ...item,
-              frontColor: item.value > 300 ? "#859B80" : "#C86286",
-            }))}
-            height={124}
-            barWidth={45}
-            initialSpacing={40}
-            spacing={2}
-            barBorderTopLeftRadius={8}
-            barBorderTopRightRadius={8}
-            endSpacing={40}
-            hideYAxisText={true}
-            yAxisThickness={0}
-            xAxisThickness={0}
-            hideRules={true}
-            renderTooltip={(item: WeeklyDataType) => {
-              if (!item) return null;
+        <View className="h-[124] w-full flex items-center justify-center mb-10">
+          <View
+            style={{
+              marginTop: 20,
+              width: "100%",
+              position: "absolute",
+              left: "50%",
+              transform: [{ translateX: isSmall ? "-45%" : "-50%" }],
+            }}>
+            <BarChart
+              data={weeklyData.map((item) => ({
+                ...item,
+                frontColor: item.value > 300 ? "#859B80" : "#C86286",
+              }))}
+              highlightEnabled={true}
+              height={124}
+              width={chartContainerWidth}
+              barWidth={barWidth}
+              initialSpacing={dynamicSpacing / 2}
+              yAxisLabelWidth={0}
+              spacing={dynamicSpacing}
+              barBorderTopLeftRadius={8}
+              barBorderTopRightRadius={8}
+              hideYAxisText={true}
+              yAxisThickness={0}
+              xAxisThickness={0}
+              hideRules={true}
+              disablePress={false}
+              renderTooltip={(item: WeeklyDataType, index: number) => {
+                if (!item) return null;
+                const hours = Math.floor(item.value / 60);
+                const minutes = Math.round(item.value % 60);
 
-              const hours = Math.floor(item.value / 60);
-              const minutes = Math.round(item.value % 60);
+                const isTallBar = item.value > 200;
 
-              return (
-                <View
-                  style={{
-                    position: "absolute",
-                    left: -3,
-                    top: item.value >= 240 ? 12 : -32,
-                    transform: [{ translateX: -20 }],
-                    backgroundColor: item.value > 300 ? "#4F5C4C" : "#AD154B",
-                    paddingVertical: 4,
-                    paddingHorizontal: 16,
-                    width: 92,
-                    borderRadius: 4,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}>
-                  <Text className="text-white text-base font-['SpaceGroteskMedium']">
-                    {hours}h {minutes}m
-                  </Text>
-                </View>
-              );
-            }}
-          />
+                let extraMargin = 0;
+                if (index === 0) extraMargin = 30;
+                if (index === 6) extraMargin = -30;
+                return (
+                  <View
+                    style={{
+                      backgroundColor: item.value > 300 ? "#4F5C4C" : "#AD154B",
+                      paddingVertical: 4,
+                      paddingHorizontal: 8,
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginLeft: -(92 - barWidth) / 2 + extraMargin,
+                      width: 92,
+                      bottom: isTallBar ? -35 : 10,
+                      zIndex: 1000,
+                    }}>
+                    <Text className="text-white text-[12px] font-['SpaceGroteskMedium']">
+                      {hours}h {minutes}m
+                    </Text>
+                  </View>
+                );
+              }}
+            />
+          </View>
         </View>
-
         <View className="bg-black h-[1.5px] my-10" />
 
         <View className="flex">

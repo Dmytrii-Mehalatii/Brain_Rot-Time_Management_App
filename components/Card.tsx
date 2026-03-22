@@ -38,21 +38,21 @@ export default function Card({
   return (
     <View
       style={{ borderColor: themeColor }}
-      className={`border-[2px] rounded-lg p-3 h-[100px] gap-3 ${isFullWidth ? "w-full" : "flex-1"}`}>
+      className={`border-[2px] rounded-lg p-3 gap-2 h-fit min-h-[100px] ${
+        isFullWidth ? "w-full" : "flex-1"
+      }`}>
       <View className="flex-row items-center gap-2">
         {Icon && (
           <Icon
-            size={20}
+            size={18}
             color="#333"
           />
         )}
-        <Text
-          numberOfLines={1}
-          className="font-['SpaceGroteskMedium'] text-[15px] text-gray-800">
+        <Text className="font-['SpaceGroteskMedium'] text-[14px] text-gray-900 flex-1">
           {title}
         </Text>
       </View>
-      <Text className="font-['SpaceGroteskRegular'] text-[14px] text-[#212121]">
+      <Text className="font-['SpaceGroteskRegular'] text-[13px] leading-4 text-[#212121]">
         {renderDescription(description)}
       </Text>
     </View>

@@ -14,7 +14,6 @@ export default function Home() {
   const { themeColor } = useTheme();
   const { stats, formatedTime, timeInMinutes } = useUserStats();
 
-  // const [isEnemiesModalVisible, setIsEnemiesModalVisible] = useState(false);
   const { activeModal, setActiveModal } = useModal();
 
   const MAX_MINUTES = 540;
@@ -25,8 +24,12 @@ export default function Home() {
 
   return (
     <View className="flex-1 justify-center items-center">
-      <ScrollView className="w-full h-full">
-        <View>
+      <ScrollView
+        className="w-[100%]"
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}>
+        <View className="flex-1 justify-center items-center">
           <EnemyModal
             isVisible={activeModal === "enemies"}
             setIsVisible={() => setActiveModal(null)}
@@ -51,7 +54,7 @@ export default function Home() {
           </View>
 
           <View
-            className={`w-full ${isSmall ? "px-8 gap-4" : "px-12 gap-6"} py-3 flex-col`}>
+            className={`w-full ${isSmall ? "px-8 gap-4" : "px-12 gap-6"} h-fit py-3 flex-col`}>
             <View className="w-full flex-col gap-6">
               <Text
                 style={{ fontFamily: "SpaceGroteskMedium" }}
