@@ -3,7 +3,14 @@ import { GenericStatsType } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect } from "react";
-import { Image, Modal, Pressable, Text, View } from "react-native";
+import {
+  Image,
+  Modal,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -65,6 +72,9 @@ export default function EnemyModal({
     transform: [{ translateY: translateY.value }],
   }));
 
+  const { width: screenWidth } = useWindowDimensions();
+  const isSmall = screenWidth < 380;
+
   return (
     <Modal
       animationType="slide"
@@ -80,7 +90,7 @@ export default function EnemyModal({
                 <View className="flex-row w-full justify-center items-center mt-6">
                   <Text
                     style={{ fontFamily: "SpaceGroteskRegular" }}
-                    className="color-[#212121] text-2xl w-full flex-shrink">
+                    className={`color-[#212121] text-2xl w-full flex-shrink`}>
                     {date === "day" ? "Today's" : "Weekly"} Biggest Enemies:
                   </Text>
                   <Pressable onPress={() => setIsVisible(false)}>
@@ -104,7 +114,7 @@ export default function EnemyModal({
                           marginTop:
                             item.appIndex === 2 || item.appIndex === 3 ? 32 : 0,
                         }}
-                        className="items-center w-[108px] ">
+                        className={`items-center ${isSmall ? "w-[80px] mx-2" : "w-[108px]"}`}>
                         <Text
                           numberOfLines={2}
                           ellipsizeMode="tail"
@@ -115,7 +125,7 @@ export default function EnemyModal({
                               fontFamily: "SpaceGroteskBold",
                               color: themeColor,
                             }}
-                            className="text-lg">
+                            className={`${isSmall ? "text-base" : "text-lg"}`}>
                             {item.appIndex}
                           </Text>{" "}
                           {item.appIndex === 1

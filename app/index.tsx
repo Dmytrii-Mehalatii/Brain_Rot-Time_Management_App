@@ -1,12 +1,35 @@
 import Button from "@/components/Button";
 import UsageStats from "@/modules/usage-stats";
+import { EventEmitter } from "expo-modules-core";
 import { Redirect } from "expo-router";
+import { useEffect, useState } from "react";
 import { Dimensions, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "./global.css";
 
+type PermissionChangedEvent = {
+  granted: boolean;
+};
+
 export default function Index() {
-  if (UsageStats.hasPermission()) {
+  const [hasPermission, setHasPermission] = useState(
+    UsageStats.hasPermission(),
+  );
+
+  useEffect(() => {
+    const emitter = new EventEmitter(UsageStats);
+
+    const sub = emitter.addListener(
+      "onPermissionChanged",
+      (event: PermissionChangedEvent) => {
+        setHasPermission(event.granted);
+      },
+    );
+
+    return () => sub.remove();
+  }, []);
+
+  if (hasPermission) {
     return <Redirect href="/(tabs)/home" />;
   }
 

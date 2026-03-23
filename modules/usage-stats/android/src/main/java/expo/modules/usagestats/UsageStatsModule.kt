@@ -1,6 +1,6 @@
 package expo.modules.usagestats
 
-import java.io.ByteArrayOutputStream
+import java.io.ByteArrayOutputStream;
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
@@ -10,6 +10,8 @@ import android.content.pm.PackageManager
 import android.provider.Settings
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.events.EventEmitter
+import expo.modules.kotlin.events.EventsDefinition
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
@@ -23,6 +25,8 @@ class UsageStatsModule : Module() {
 
     override fun definition() = ModuleDefinition {
         Name("UsageStats")
+
+        Events("onPermissionChanged")
 
         Function("hasPermission") {
             val context = appContext.reactContext ?: return@Function false
@@ -84,6 +88,41 @@ class UsageStatsModule : Module() {
             return@Function emptyList<Map<String, Any>>()
           }
           getWeeklyStreakData(context)
+        }
+
+        OnCreate {
+            val context = appContext.reactContext ?: return@OnCreate
+
+            val handler = android.os.Handler(android.os.Looper.getMainLooper())
+
+            val runnable = object : Runnable {
+                override fun run() {
+                    checkPermissionAndEmit(context)
+                    handler.postDelayed(this, 1000)
+                }
+            }
+
+            handler.post(runnable)
+        }
+    }
+
+    private var lastPermissionState: Boolean? = null
+
+    private fun checkPermissionAndEmit(context: Context) {
+
+        val current = hasUsagePermission(context)
+
+        if (lastPermissionState == null) {
+            lastPermissionState = current
+            return
+        }
+        
+        if (current != lastPermissionState) {
+            lastPermissionState = current
+            sendEvent(
+                "onPermissionChanged",
+                mapOf("granted" to current)
+            )
         }
     }
 

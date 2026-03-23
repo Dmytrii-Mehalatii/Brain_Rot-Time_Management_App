@@ -38,11 +38,11 @@ export default function Streak() {
           />
         )}
       </View>
-      <View className="flex flex-row gap-[14] mt-3">
+      <View className="flex flex-row gap-[14] mt-3 items-center justify-center text-center">
         {weeklyStreak.map((item) => (
           <View
             key={item.day}
-            className="w-full flex-shrink">
+            className="flex items-center justify-center w-full flex-shrink">
             {item.success ? (
               <BrainIcon
                 fill="#9D1344"
@@ -56,7 +56,7 @@ export default function Streak() {
                 height={32}
               />
             )}
-            <Text className="text-[#212121] font-['SpaceGroteskRegular'] text-sm text-center ml-[2]">
+            <Text className="text-[#212121] font-['SpaceGroteskRegular'] text-sm text-center ">
               {item.day === "Today"
                 ? item.day.slice(0, 3)
                 : item.day.slice(0, 1)}

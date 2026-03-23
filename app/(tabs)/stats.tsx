@@ -101,7 +101,7 @@ export default function Stats() {
                 const hours = Math.floor(item.value / 60);
                 const minutes = Math.round(item.value % 60);
 
-                const isTallBar = item.value > 200;
+                const isTallBar = item.value > 180 || avgTimeSpend < item.value;
 
                 let extraMargin = 0;
                 if (index === 0) extraMargin = 30;

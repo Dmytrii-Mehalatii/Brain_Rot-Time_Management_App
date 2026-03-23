@@ -96,7 +96,15 @@ export function UserStatsProvider({ children }: { children: ReactNode }) {
     handleGetDailyStreak();
     handleGetWeeklyStreak();
 
-    const interval = setInterval(handleGetStats, 30_000);
+    const interval = setInterval(() => {
+      handleGetStats();
+      handleGetWeeklyAppsTime();
+      handleGetFormatedTime();
+      handleGetTimeInMinutes();
+      handleGetWeeklyTimeInMinutes();
+      handleGetDailyStreak();
+      handleGetWeeklyStreak();
+    }, 5_000);
 
     return () => {
       clearInterval(interval);
