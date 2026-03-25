@@ -7,12 +7,12 @@ import MainImage from "@/components/MainImage";
 import Streak from "@/components/Streak";
 import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats from "@/hooks/useUserStats";
+import useUserWeeklyStats from "@/hooks/useUserGenericStats";
 import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function Home() {
   const { themeColor } = useTheme();
-  const { stats, formatedTime, timeInMinutes } = useUserStats();
+  const { stats, formatedTime, timeInMinutes } = useUserWeeklyStats();
 
   const { activeModal, setActiveModal } = useModal();
 

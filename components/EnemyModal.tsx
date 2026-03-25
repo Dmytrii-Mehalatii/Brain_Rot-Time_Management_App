@@ -87,10 +87,10 @@ export default function EnemyModal({
             className="h-[70%] rounded-t-3xl absolute bottom-0 border-[#000] border-t-[1.5px] px-12 border-x-[1.5px] bg-white w-full opacity-100">
             <GestureDetector gesture={panGesture}>
               <View>
-                <View className="flex-row w-full justify-center items-center mt-6">
+                <View className="flex-row w-full justify-between items-center mt-6">
                   <Text
                     style={{ fontFamily: "SpaceGroteskRegular" }}
-                    className={`color-[#212121] text-2xl w-full flex-shrink`}>
+                    className={`color-[#212121] text-2xl max-w-[80%] flex-shrink`}>
                     {date === "day" ? "Today's" : "Weekly"} Biggest Enemies:
                   </Text>
                   <Pressable onPress={() => setIsVisible(false)}>
@@ -103,7 +103,7 @@ export default function EnemyModal({
                   </Pressable>
                 </View>
 
-                <View className="items-center mt-5 h-fit">
+                <View className="mt-5">
                   <CustomFlatList
                     data={swapedArray}
                     isHorizontal={true}
@@ -164,7 +164,7 @@ export default function EnemyModal({
 
             <View className="bg-black h-[1px] my-6" />
 
-            <View className="max-h-[328px] overflow-hidden">
+            <View className="flex-1 overflow-hidden">
               <CustomFlatList
                 isHorizontal={false}
                 isScrollEnabled={true}

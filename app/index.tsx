@@ -42,24 +42,27 @@ export default function Index() {
           <Image
             source={require("@/assets/images/clouds_bg_top.png")}
             style={{
+              width: "100%",
+              backgroundColor: "#0553",
               height: undefined,
               aspectRatio: isSmall ? 1.25 : 1.15,
             }}
             cachePolicy="memory-disk"
             contentFit="cover"
-            className="w-[100%]"
           />
 
           <Image
             source={require("@/assets/images/welcomingBrain.png")}
             style={{
-              height: undefined,
+              width: "70%",
               aspectRatio: 1,
+              position: "absolute",
+              bottom: 5,
+              left: "50%",
               transform: [{ translateX: "-50%" }],
             }}
             cachePolicy="memory-disk"
             contentFit="cover"
-            className="absolute bottom-5 w-[70%] left-1/2"
           />
         </View>
 
@@ -91,7 +94,8 @@ export default function Index() {
             source={require("@/assets/images/clouds_bg_bottom.png")}
             style={{
               position: "absolute",
-              bottom: -540,
+              bottom: -225,
+              width: "140%",
               aspectRatio: 1.25,
               zIndex: -1,
               opacity: 0.8,

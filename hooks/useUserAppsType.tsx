@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useMemo } from "react";
-import useUserStats from "./useUserStats";
+import useUserStats from "./useUserGenericStats";
 
 type AppDetails = {
   type: string;

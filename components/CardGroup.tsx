@@ -1,4 +1,4 @@
-import useUserStats from "@/hooks/useUserStats";
+import useUserStats from "@/hooks/useUserGenericStats";
 import { Text, View } from "react-native";
 import Card from "./Card";
 

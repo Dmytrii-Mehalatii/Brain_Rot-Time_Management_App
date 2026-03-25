@@ -2,7 +2,7 @@ import EnemyList from "@/components/EnemyList";
 import EnemyModal from "@/components/EnemyModal";
 import { useModal } from "@/hooks/useModal";
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats from "@/hooks/useUserStats";
+import useUserWeeklyStats from "@/hooks/useUserWeeklyStats";
 import { WeeklyDataType } from "@/types";
 import { useMemo, useState } from "react";
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
@@ -10,7 +10,8 @@ import { ScrollView } from "react-native-gesture-handler";
 import { BarChart, PieChart } from "react-native-gifted-charts";
 
 export default function Stats() {
-  const { weeklyData, weeklyTimeInMinutes, weeklyAppsTime } = useUserStats();
+  const { weeklyData, weeklyTimeInMinutes, weeklyAppsTime } =
+    useUserWeeklyStats();
   const { themeColor } = useTheme();
 
   const avgTimeSpend = weeklyTimeInMinutes / 7;

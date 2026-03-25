@@ -1,8 +1,10 @@
 import Header from "@/components/Header";
 import BrainMapProvider from "@/hooks/useModal";
+import { UserStreakStatsProvider } from "@/hooks/useStreakStats";
 import { ThemeProvider } from "@/hooks/useTheme";
-import UserAppsProvider from "@/hooks/useUserAppsType";
-import { UserStatsProvider } from "@/hooks/useUserStats";
+import UserAppsProviderType from "@/hooks/useUserAppsType";
+import { UserGenericStatsProvider } from "@/hooks/useUserGenericStats";
+import { UserWeeklyStatsProvider } from "@/hooks/useUserWeeklyStats";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,33 +22,37 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <UserStatsProvider>
-          <UserAppsProvider>
-            <BrainMapProvider>
-              <Stack>
-                <Stack.Screen
-                  name="(tabs)"
-                  options={{
-                    headerTitle: () => (
-                      <Header
-                        title="Brain Rot"
-                        brainIcon={true}
-                      />
-                    ),
-                    headerBackVisible: false,
-                  }}
-                />
-                <Stack.Screen
-                  name="index"
-                  options={{
-                    headerShown: false,
-                    headerShadowVisible: false,
-                  }}
-                />
-              </Stack>
-            </BrainMapProvider>
-          </UserAppsProvider>
-        </UserStatsProvider>
+        <UserGenericStatsProvider>
+          <UserAppsProviderType>
+            <UserWeeklyStatsProvider>
+              <UserStreakStatsProvider>
+                <BrainMapProvider>
+                  <Stack>
+                    <Stack.Screen
+                      name="(tabs)"
+                      options={{
+                        headerTitle: () => (
+                          <Header
+                            title="Brain Rot"
+                            brainIcon={true}
+                          />
+                        ),
+                        headerBackVisible: false,
+                      }}
+                    />
+                    <Stack.Screen
+                      name="index"
+                      options={{
+                        headerShown: false,
+                        headerShadowVisible: false,
+                      }}
+                    />
+                  </Stack>
+                </BrainMapProvider>
+              </UserStreakStatsProvider>
+            </UserWeeklyStatsProvider>
+          </UserAppsProviderType>
+        </UserGenericStatsProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

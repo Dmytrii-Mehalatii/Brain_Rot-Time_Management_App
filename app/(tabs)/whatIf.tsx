@@ -1,6 +1,6 @@
 import CardGroup from "@/components/CardGroup";
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats from "@/hooks/useUserStats";
+import useUserStats from "@/hooks/useUserGenericStats";
 import { Dimensions, ScrollView, Text, View } from "react-native";
 
 export default function WhatIf() {

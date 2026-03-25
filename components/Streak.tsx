@@ -1,5 +1,5 @@
 import BrainIcon from "@/assets/icons/brain_icon.svg";
-import useUserStats from "@/hooks/useUserStats";
+import useStreakStats from "@/hooks/useStreakStats";
 import { WeeklyStreakType } from "@/types";
 import { Image } from "expo-image";
 import React from "react";
@@ -25,7 +25,7 @@ const StreakDayItem: React.FC<{ item: WeeklyStreakType }> = React.memo(
 StreakDayItem.displayName = "StreakDayItem";
 
 export default function Streak() {
-  const { dailyStreak, weeklyStreak } = useUserStats();
+  const { dailyStreak, weeklyStreak } = useStreakStats();
 
   return (
     <View className="px-6">
