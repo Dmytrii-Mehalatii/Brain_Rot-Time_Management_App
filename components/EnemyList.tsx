@@ -1,7 +1,8 @@
 import { useTheme } from "@/hooks/useTheme";
 import { AppType } from "@/types";
+import { Image } from "expo-image";
 import { useMemo, useState } from "react";
-import { Image, LayoutChangeEvent, Text, View } from "react-native";
+import { LayoutChangeEvent, Text, View } from "react-native";
 import CustomFlatList from "./CustomFlatList";
 
 type MaybeApp = AppType | { placeholder: true; seconds?: number };

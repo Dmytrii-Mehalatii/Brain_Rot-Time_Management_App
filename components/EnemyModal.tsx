@@ -1,10 +1,10 @@
 import { useTheme } from "@/hooks/useTheme";
 import { GenericStatsType } from "@/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback, useEffect } from "react";
 import {
-  Image,
   Modal,
   Pressable,
   Text,

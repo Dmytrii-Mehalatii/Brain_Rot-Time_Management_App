@@ -1,6 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
+import { Image } from "expo-image";
 import { useMemo } from "react";
-import { Image } from "react-native";
 
 const brainImages = [
   require("@/assets/images/mainBrain/1_stage_Brain.png"),
@@ -23,7 +23,9 @@ export default function MainImage() {
     <Image
       source={source}
       style={{ width: "100%", height: undefined, aspectRatio: 1 }}
-      resizeMode="contain"
+      contentFit="contain"
+      cachePolicy="memory-disk"
+      priority="high"
     />
   );
 }

@@ -1,12 +1,12 @@
 import Button from "@/components/Button";
 import UsageStats from "@/modules/usage-stats";
+import { Image } from "expo-image";
 import { EventEmitter } from "expo-modules-core";
 import { Redirect } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, Image, Text, View } from "react-native";
+import { Dimensions, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import "./global.css";
-
 type PermissionChangedEvent = {
   granted: boolean;
 };
@@ -45,7 +45,8 @@ export default function Index() {
               height: undefined,
               aspectRatio: isSmall ? 1.25 : 1.15,
             }}
-            resizeMode="cover"
+            cachePolicy="memory-disk"
+            contentFit="cover"
             className="w-[100%]"
           />
 
@@ -56,7 +57,8 @@ export default function Index() {
               aspectRatio: 1,
               transform: [{ translateX: "-50%" }],
             }}
-            resizeMode="cover"
+            cachePolicy="memory-disk"
+            contentFit="cover"
             className="absolute bottom-5 w-[70%] left-1/2"
           />
         </View>
@@ -94,7 +96,8 @@ export default function Index() {
               zIndex: -1,
               opacity: 0.8,
             }}
-            resizeMode="contain"
+            contentFit="contain"
+            cachePolicy="memory-disk"
           />
         </View>
       </View>

@@ -1,6 +1,5 @@
 import UsageStats from "@/modules/usage-stats";
 import {
-  AppType,
   DailyStreakType,
   GenericStatsType,
   WeeklyAppsTime,
@@ -12,6 +11,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -28,101 +28,62 @@ type UserStatsContextType = {
 
 const UserStatsContext = createContext<UserStatsContextType | null>(null);
 
+function getAllStats(): UserStatsContextType {
+  const stats = UsageStats.getStats();
+  const weeklyAppsTime = UsageStats.getWeeklyAppStats();
+  const time = UsageStats.sumTime();
+
+  const formatedTime = time.formatted;
+  const timeInMinutes = time.totalMinutes;
+
+  const weeklyData = UsageStats.getWeeklyTime();
+  const weeklyTimeInMinutes = weeklyData.reduce(
+    (sum: number, item: WeeklyDataType) => sum + item.value,
+    0,
+  );
+
+  const dailyStreak = UsageStats.getDailyStreak();
+  const weeklyStreak = UsageStats.getWeeklyStreak();
+
+  return {
+    stats,
+    formatedTime,
+    timeInMinutes,
+    weeklyData,
+    weeklyTimeInMinutes,
+    weeklyAppsTime,
+    dailyStreak,
+    weeklyStreak,
+  };
+}
+
 export function UserStatsProvider({ children }: { children: ReactNode }) {
-  const [stats, setStats] = useState<AppType[]>([]);
-  const [formatedTime, setFormatedTime] = useState<string | null>(null);
-  const [timeInMinutes, setTimeInMinutes] = useState(0);
-
-  const [weeklyData, setWeeklyData] = useState([]);
-  const [weeklyTimeInMinutes, setWeeklyTimeInMinutes] = useState(0);
-
-  const [weeklyAppsTime, setWeeklyAppsTime] = useState([]);
-
-  const [dailyStreak, setDailyStreak] = useState<DailyStreakType>({
-    streak: 0,
-    todayMinutes: 0,
-    successToday: false,
-    limitMinutes: 0,
-  });
-  const [weeklyStreak, setWeeklyStreak] = useState<WeeklyStreakType[]>([]);
+  const [state, setState] = useState<UserStatsContextType>(() => getAllStats());
 
   useEffect(() => {
-    const handleGetStats = () => {
-      const data = UsageStats.getStats();
-      setStats(data);
+    const updatedStats = () => {
+      setState((prev) => {
+        const next = getAllStats();
+
+        if (JSON.stringify(prev) === JSON.stringify(next)) {
+          return prev;
+        }
+
+        return next;
+      });
     };
 
-    const handleGetWeeklyAppsTime = () => {
-      const data = UsageStats.getWeeklyAppStats();
-      setWeeklyAppsTime(data);
-    };
-
-    const handleGetFormatedTime = () => {
-      const data = UsageStats.sumTime();
-
-      setFormatedTime(data.formatted);
-    };
-
-    const handleGetTimeInMinutes = () => {
-      const data = UsageStats.sumTime();
-      setTimeInMinutes(data.totalMinutes);
-    };
-
-    const handleGetWeeklyTimeInMinutes = () => {
-      const weeklyData = UsageStats.getWeeklyTime();
-      setWeeklyData(weeklyData);
-      let sum = 0;
-      for (let i = 0; i < weeklyData.length; i++) {
-        sum += weeklyData[i].value;
-      }
-      setWeeklyTimeInMinutes(sum);
-    };
-
-    const handleGetDailyStreak = () => {
-      const data = UsageStats.getDailyStreak();
-      setDailyStreak(data);
-    };
-
-    const handleGetWeeklyStreak = () => {
-      const data = UsageStats.getWeeklyStreak();
-      setWeeklyStreak(data);
-    };
-
-    handleGetStats();
-    handleGetWeeklyAppsTime();
-    handleGetFormatedTime();
-    handleGetTimeInMinutes();
-    handleGetWeeklyTimeInMinutes();
-    handleGetDailyStreak();
-    handleGetWeeklyStreak();
-
-    const interval = setInterval(() => {
-      handleGetStats();
-      handleGetWeeklyAppsTime();
-      handleGetFormatedTime();
-      handleGetTimeInMinutes();
-      handleGetWeeklyTimeInMinutes();
-      handleGetDailyStreak();
-      handleGetWeeklyStreak();
-    }, 5_000);
+    const interval = setInterval(updatedStats, 10000);
 
     return () => {
       clearInterval(interval);
     };
   }, []);
 
+  const value = useMemo(() => state, [state]);
+
   return (
-    <UserStatsContext.Provider
-      value={{
-        stats,
-        formatedTime,
-        timeInMinutes,
-        weeklyData,
-        weeklyTimeInMinutes,
-        weeklyAppsTime,
-        dailyStreak,
-        weeklyStreak,
-      }}>
+    <UserStatsContext.Provider value={value}>
       {children}
     </UserStatsContext.Provider>
   );
