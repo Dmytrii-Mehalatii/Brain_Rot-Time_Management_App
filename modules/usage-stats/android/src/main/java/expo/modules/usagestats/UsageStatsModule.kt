@@ -163,35 +163,68 @@ class UsageStatsModule : Module() {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    private fun getAppDurationsFromEvents(usm: UsageStatsManager, startTime: Long, endTime: Long): Map<String, Long> {
+    private fun getAppDurationsFromEvents(
+        usm: UsageStatsManager,
+        startTime: Long,
+        endTime: Long
+    ): Map<String, Long> {
+
         val events = usm.queryEvents(startTime, endTime)
         val event = UsageEvents.Event()
-        
+
         val durations = mutableMapOf<String, Long>()
-        val lastResumedTime = mutableMapOf<String, Long>()
+        val lastStart = mutableMapOf<String, Long>()
+
+        val MAX_SESSION = 1000L * 60 * 60
+        val STALE_THRESHOLD = 1000L * 60 * 60
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val pkg = event.packageName ?: continue
 
             when (event.eventType) {
-                UsageEvents.Event.ACTIVITY_RESUMED -> {
-                    lastResumedTime[pkg] = event.timeStamp
+
+                UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                    if (!lastStart.containsKey(pkg)) {
+                        lastStart[pkg] = event.timeStamp
+                    }
                 }
-                UsageEvents.Event.ACTIVITY_PAUSED -> {
-                    val start = lastResumedTime[pkg]
+
+                UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                    val start = lastStart[pkg]
                     if (start != null) {
-                        val duration = event.timeStamp - start
-                        durations[pkg] = (durations[pkg] ?: 0L) + duration
-                        lastResumedTime.remove(pkg)
+                        var duration = event.timeStamp - start
+
+                        if (duration > MAX_SESSION) {
+                            duration = MAX_SESSION
+                        }
+
+                        if (duration > 0) {
+                            durations[pkg] = (durations[pkg] ?: 0L) + duration
+                        }
+
+                        lastStart.remove(pkg)
                     }
                 }
             }
         }
-        
-        lastResumedTime.forEach { (pkg, start) ->
-            val duration = endTime - start
-            durations[pkg] = (durations[pkg] ?: 0L) + duration
+
+        val now = System.currentTimeMillis()
+
+        lastStart.forEach { (pkg, start) ->
+            val age = now - start
+
+            if (age < STALE_THRESHOLD) {
+                var duration = endTime - start
+
+                if (duration > MAX_SESSION) {
+                    duration = MAX_SESSION
+                }
+
+                if (duration > 0) {
+                    durations[pkg] = (durations[pkg] ?: 0L) + duration
+                }
+            }
         }
 
         return durations
@@ -205,7 +238,7 @@ class UsageStatsModule : Module() {
       val startTime = getTodayStartTime()
 
 
-      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui", "com.google.android.googlesdksetup")
+      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui", "com.google.android.googlesdksetup", "com.anonymous.brainrot")
       val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
     
       val totalMs = appDurations.filter { !blacklistedPackages.contains(it.key) }.values.sum()
@@ -226,7 +259,8 @@ class UsageStatsModule : Module() {
         val blacklistedPackages = listOf(
             "com.google.android.googlequicksearchbox",
             "com.android.systemui",
-            "com.google.android.googlesdksetup"
+            "com.google.android.googlesdksetup",
+            "com.anonymous.brainrot"
         )
 
         val result = mutableListOf<Map<String, Any>>()
@@ -324,7 +358,8 @@ class UsageStatsModule : Module() {
         val blacklistedPackages = listOf(
             "com.google.android.googlequicksearchbox",
             "com.android.systemui",
-            "com.google.android.googlesdksetup"
+            "com.google.android.googlesdksetup",
+            "com.anonymous.brainrot"
         )
 
         val sortedPackages = appDurations.entries
@@ -373,7 +408,8 @@ class UsageStatsModule : Module() {
         val blacklistedPackages = listOf(
             "com.google.android.googlequicksearchbox",
             "com.android.systemui",
-            "com.google.android.googlesdksetup"
+            "com.google.android.googlesdksetup",
+            "com.anonymous.brainrot"
         )
 
         val weeklyDurations = mutableMapOf<String, Long>()
@@ -456,7 +492,8 @@ class UsageStatsModule : Module() {
       val blacklistedPackages = listOf(
         "com.google.android.googlequicksearchbox",
         "com.android.systemui",
-        "com.google.android.googlesdksetup"
+        "com.google.android.googlesdksetup",
+        "com.anonymous.brainrot"
       )
 
       val appDurations = getAppDurationsFromEvents(usm, start, end)

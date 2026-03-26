@@ -1,5 +1,5 @@
+import { FlashList } from "@shopify/flash-list";
 import { ReactNode } from "react";
-import { FlatList } from "react-native";
 
 type CustomFlatListProps = {
   data: T[];
@@ -15,7 +15,7 @@ export default function CustomFlatList({
   isHorizontal,
 }: CustomFlatListProps) {
   return (
-    <FlatList
+    <FlashList
       data={data}
       horizontal={isHorizontal}
       scrollEnabled={isScrollEnabled}

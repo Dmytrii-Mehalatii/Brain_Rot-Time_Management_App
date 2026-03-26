@@ -110,6 +110,9 @@ export default function Home() {
               <EnemyList data={stats.slice(0, 3)} />
             </View>
           </View>
+          <Text className="text-sm text-gray-500">
+            *We don’t track how long you use our app
+          </Text>
         </View>
       </ScrollView>
     </View>

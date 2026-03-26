@@ -47,7 +47,7 @@ export default function Index() {
               height: undefined,
               aspectRatio: isSmall ? 1.25 : 1.15,
             }}
-            cachePolicy="memory-disk"
+            // cachePolicy="memory-disk"
             contentFit="cover"
           />
 
@@ -61,7 +61,7 @@ export default function Index() {
               left: "50%",
               transform: [{ translateX: "-50%" }],
             }}
-            cachePolicy="memory-disk"
+            // cachePolicy="memory-disk"
             contentFit="cover"
           />
         </View>
@@ -101,7 +101,7 @@ export default function Index() {
               opacity: 0.8,
             }}
             contentFit="contain"
-            cachePolicy="memory-disk"
+            // cachePolicy="memory-disk"
           />
         </View>
       </View>
