@@ -45,9 +45,7 @@ export function UserStreakStatsProvider({ children }: { children: ReactNode }) {
       });
     };
 
-    const interval = setInterval(updatedStreakStats, 30000);
-
-    return () => clearInterval(interval);
+    updatedStreakStats();
   }, []);
 
   const value = useMemo(() => streak, [streak]);

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "brain-rot",
+    "name": "BrainRot",
     "slug": "brainrot",
     "version": "1.0.0",
     "jsEngine": "hermes",
@@ -33,12 +33,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/ic_launcher_background.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#DF839A",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#DF839A"
           }
         }
       ],
@@ -54,6 +54,12 @@
         "projectId": "0ff564f0-4689-469e-bb9b-e15c7d71cffd"
       }
     },
-    "owner": "dmytriimehalatiis-organization"
+    "owner": "dmytriimehalatiis-organization",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0ff564f0-4689-469e-bb9b-e15c7d71cffd"
+    }
   }
 }

@@ -51,9 +51,7 @@ export function UserWeeklyStatsProvider({ children }: { children: ReactNode }) {
       });
     };
 
-    const interval = setInterval(updatedStats, 30000);
-
-    return () => clearInterval(interval);
+    updatedStats();
   }, []);
 
   const value = useMemo(() => weeklyStats, [weeklyStats]);

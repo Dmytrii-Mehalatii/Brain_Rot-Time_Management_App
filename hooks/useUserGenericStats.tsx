@@ -55,9 +55,7 @@ export function UserGenericStatsProvider({
       });
     };
 
-    const interval = setInterval(updatedStats, 30000);
-
-    return () => clearInterval(interval);
+    updatedStats();
   }, []);
 
   const value = useMemo(() => state, [state]);
