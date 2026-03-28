@@ -59,23 +59,25 @@ export default function Home() {
     };
   });
 
-  const SWIPE_THRESHOLD = screenWidth * 0.3;
+  const SWIPE_THRESHOLD = screenWidth * 0.2;
 
   const gesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-10, 10])
     .onUpdate((e) => {
       translateX.value = e.translationX * 0.6;
     })
     .onEnd(() => {
       if (translateX.value < -SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-screenWidth, { duration: 150 }, () => {
+        translateX.value = withTiming(-screenWidth, { duration: 100 }, () => {
           runOnJS(onRedirectRight)();
         });
       } else if (translateX.value > SWIPE_THRESHOLD) {
-        translateX.value = withTiming(screenWidth, { duration: 150 }, () => {
+        translateX.value = withTiming(screenWidth, { duration: 100 }, () => {
           runOnJS(onRedirectLeft)();
         });
       } else {
-        translateX.value = withTiming(0, { duration: 150 });
+        translateX.value = withTiming(0, { duration: 100 });
       }
     });
 
@@ -92,6 +94,8 @@ export default function Home() {
         className="flex-1 justify-center items-center">
         <ScrollView
           className="w-[100%]"
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             flexGrow: 1,
           }}>

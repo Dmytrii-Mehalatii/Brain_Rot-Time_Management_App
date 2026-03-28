@@ -80,9 +80,11 @@ export default function Stats() {
     };
   });
 
-  const SWIPE_THRESHOLD = screenWidth * 0.3;
+  const SWIPE_THRESHOLD = screenWidth * 0.2;
 
   const gesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-10, 10])
     .onUpdate((e) => {
       if (e.translationX < 0) {
         translateX.value = e.translationX * 0.6;
@@ -90,11 +92,11 @@ export default function Stats() {
     })
     .onEnd(() => {
       if (translateX.value < -SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-screenWidth, { duration: 150 }, () => {
+        translateX.value = withTiming(-screenWidth, { duration: 100 }, () => {
           runOnJS(onRedirect)();
         });
       } else {
-        translateX.value = withTiming(0, { duration: 150 });
+        translateX.value = withTiming(0, { duration: 100 });
       }
     });
 
@@ -106,6 +108,7 @@ export default function Stats() {
 
   return (
     <ScrollView
+      showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: 20,
