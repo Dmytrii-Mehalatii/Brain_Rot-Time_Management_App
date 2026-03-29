@@ -54,7 +54,7 @@ export function UserWeeklyStatsProvider({ children }: { children: ReactNode }) {
 
         if (next.weeklyData.length === 0 && attempts < 3) {
           attempts++;
-          setTimeout(tryFetch, 500);
+          setTimeout(tryFetch, 50);
         } else {
           setWeeklyStats((prev) => {
             const next = getUserWeeklyStats();

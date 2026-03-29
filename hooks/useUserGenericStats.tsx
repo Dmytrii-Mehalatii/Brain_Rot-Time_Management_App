@@ -54,7 +54,7 @@ export function UserGenericStatsProvider({
 
         if (next.stats.length === 0 && attempts < 3) {
           attempts++;
-          setTimeout(tryFetch, 500);
+          setTimeout(tryFetch, 50);
         } else {
           setState((prev) => {
             if (JSON.stringify(prev) === JSON.stringify(next)) {

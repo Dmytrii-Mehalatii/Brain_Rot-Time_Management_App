@@ -49,7 +49,7 @@ export function UserStreakStatsProvider({ children }: { children: ReactNode }) {
 
         if (next.weeklyStreak.length === 0 && attempts < 3) {
           attempts++;
-          setTimeout(tryFetch, 500);
+          setTimeout(tryFetch, 50);
         } else {
           setStreak((prev) => {
             if (JSON.stringify(prev) === JSON.stringify(next)) {
