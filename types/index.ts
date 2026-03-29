@@ -43,3 +43,7 @@ export type GenericStatsType = {
   seconds: number;
   icon: string;
 };
+
+export type PermissionChangedEvent = {
+  granted: boolean;
+};

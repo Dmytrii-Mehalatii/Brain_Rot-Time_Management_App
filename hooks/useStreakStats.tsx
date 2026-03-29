@@ -1,5 +1,10 @@
 import UsageStats from "@/modules/usage-stats";
-import { DailyStreakType, WeeklyStreakType } from "@/types";
+import {
+  DailyStreakType,
+  PermissionChangedEvent,
+  WeeklyStreakType,
+} from "@/types";
+import { EventEmitter } from "expo-modules-core";
 import {
   createContext,
   ReactNode,
@@ -32,20 +37,44 @@ export function UserStreakStatsProvider({ children }: { children: ReactNode }) {
   const [streak, setStreak] = useState<UserStreakStatsContextType>(() =>
     getUserStreakStats(),
   );
+
   useEffect(() => {
-    const updatedStreakStats = () => {
-      setStreak((prev) => {
+    const emitter = new EventEmitter(UsageStats);
+
+    const updateWithRetry = () => {
+      let attempts = 0;
+
+      const tryFetch = () => {
         const next = getUserStreakStats();
 
-        if (JSON.stringify(prev) === JSON.stringify(next)) {
-          return prev;
+        if (next.weeklyStreak.length === 0 && attempts < 3) {
+          attempts++;
+          setTimeout(tryFetch, 500);
+        } else {
+          setStreak((prev) => {
+            if (JSON.stringify(prev) === JSON.stringify(next)) {
+              return prev;
+            }
+            return next;
+          });
         }
+      };
 
-        return next;
-      });
+      tryFetch();
     };
 
-    updatedStreakStats();
+    const sub = emitter.addListener(
+      "onPermissionChanged",
+      (e: PermissionChangedEvent) => {
+        if (e.granted) {
+          updateWithRetry();
+        }
+      },
+    );
+
+    updateWithRetry();
+
+    return () => sub.remove();
   }, []);
 
   const value = useMemo(() => streak, [streak]);

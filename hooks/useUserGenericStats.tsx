@@ -1,5 +1,6 @@
 import UsageStats from "@/modules/usage-stats";
-import { GenericStatsType } from "@/types";
+import { GenericStatsType, PermissionChangedEvent } from "@/types";
+import { EventEmitter } from "expo-modules-core";
 import {
   createContext,
   ReactNode,
@@ -43,19 +44,42 @@ export function UserGenericStatsProvider({
   );
 
   useEffect(() => {
-    const updatedStats = () => {
-      setState((prev) => {
+    const emitter = new EventEmitter(UsageStats);
+
+    const updateWithRetry = () => {
+      let attempts = 0;
+
+      const tryFetch = () => {
         const next = getGenericStats();
 
-        if (JSON.stringify(prev) === JSON.stringify(next)) {
-          return prev;
-        }
+        if (next.stats.length === 0 && attempts < 3) {
+          attempts++;
+          setTimeout(tryFetch, 500);
+        } else {
+          setState((prev) => {
+            if (JSON.stringify(prev) === JSON.stringify(next)) {
+              return prev;
+            }
 
-        return next;
-      });
+            return next;
+          });
+        }
+      };
+
+      tryFetch();
     };
 
-    updatedStats();
+    const sub = emitter.addListener(
+      "onPermissionChanged",
+      (e: PermissionChangedEvent) => {
+        if (e.granted) {
+          updateWithRetry();
+        }
+      },
+    );
+
+    updateWithRetry();
+    return () => sub.remove();
   }, []);
 
   const value = useMemo(() => state, [state]);

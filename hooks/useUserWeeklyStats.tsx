@@ -1,5 +1,10 @@
 import UsageStats from "@/modules/usage-stats";
-import { WeeklyAppsTime, WeeklyDataType } from "@/types";
+import {
+  PermissionChangedEvent,
+  WeeklyAppsTime,
+  WeeklyDataType,
+} from "@/types";
+import { EventEmitter } from "expo-modules-core";
 import {
   createContext,
   ReactNode,
@@ -39,19 +44,44 @@ export function UserWeeklyStatsProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    const updatedStats = () => {
-      setWeeklyStats((prev) => {
+    const emitter = new EventEmitter(UsageStats);
+
+    const updateWithRetry = () => {
+      let attempts = 0;
+
+      const tryFetch = () => {
         const next = getUserWeeklyStats();
 
-        if (JSON.stringify(prev) === JSON.stringify(next)) {
-          return prev;
-        }
+        if (next.weeklyData.length === 0 && attempts < 3) {
+          attempts++;
+          setTimeout(tryFetch, 500);
+        } else {
+          setWeeklyStats((prev) => {
+            const next = getUserWeeklyStats();
 
-        return next;
-      });
+            if (JSON.stringify(prev) === JSON.stringify(next)) {
+              return prev;
+            }
+
+            return next;
+          });
+        }
+      };
+
+      tryFetch();
     };
 
-    updatedStats();
+    const sub = emitter.addListener(
+      "onPermissionChanged",
+      (e: PermissionChangedEvent) => {
+        if (e.granted) {
+          updateWithRetry();
+        }
+      },
+    );
+
+    updateWithRetry();
+    return () => sub.remove();
   }, []);
 
   const value = useMemo(() => weeklyStats, [weeklyStats]);
