@@ -1,50 +1,111 @@
-# Welcome to your Expo app 👋
+# BrainRot — Track Your Screen Time, Reclaim Your Mind
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**BrainRot** is an Android app that helps you understand and reduce excessive screen time by visualizing your digital habits in a fun, engaging, and slightly unsettling way.
 
-## Get started
+Instead of boring stats, BrainRot turns your usage into a **living experience** — your brain literally _changes_ based on how you spend your time.
 
-1. Install dependencies
+## ✨ Features
 
-   ```bash
-   npm install
-   ```
+### 1 Smart Screen Time Tracking
 
-2. Start the app
+Track how much time you spend across different apps and categories:
 
-   ```bash
-   npx expo start
-   ```
+- Social media
+- Games
+- Video / streaming
+- Productivity & more
 
-In the output, you'll find options to open the app in a
+Get detailed **daily and weekly breakdowns** of your usage.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 2 Dynamic Brain Visualization
 
-## Get a fresh project
+Beyond generic usage stats, your behavior is reflected through an **interactive brain map**:
 
-When you're ready, run:
+- Each part of the brain represents a category of apps
+- The more time you spend, the more that section evolves
+- Watch your brain go from **healthy → rotted** 👀
 
-```bash
-npm run reset-project
-```
+---
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 3 Insightful Analytics
 
-## Learn more
+Stay informed with clear and simple stats:
 
-To learn more about developing your project with Expo, look at the following resources:
+- Daily usage breakdown
+- Weekly averages
+- Most-used apps
+- “Biggest enemies” (your top time-wasting apps)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+### 4 Focus Streak System
 
-Join our community of developers creating universal apps.
+Build better habits with a streak mechanic:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Stay under **4 hours/day** to maintain your streak
+- Exceed it → streak resets to **0**
+- Encourages consistent, mindful usage
+
+---
+
+### 5 “What If?” Time Reclaim Feature
+
+See what your lost time could have been:
+
+- Learn new words
+- Read books
+- Exercise
+- Plan your week
+- …and more
+
+Turn wasted hours into **real-world opportunities**.
+
+---
+
+### 6 Adaptive UI & Mascot
+
+The app’s personality evolves with your behavior:
+
+- A cheerful brain when you're in control
+- A tired, “rotting” brain when usage spikes
+- UI subtly shifts to reflect your digital health
+
+> [!NOTE]
+>
+> ## Design and Illustrations
+>
+> All **UI/UX design, illustrations, and visual concepts** in BrainRot were designed and created entirely by me :)
+>
+> The goal was to make screen time tracking:
+>
+> - more **emotional**
+> - more **visual**
+
+## 📸 Preview
+
+<p align="center">
+  <img src="assets/images/forReadme/mainPage.png" />
+  <img src="assets/images/forReadme/differentPages.png" />
+</p>
+
+---
+
+## Install & Try BrainRot
+
+You can quickly try **BrainRot** on your Android device using the **Expo preview build** via QR Code.
+
+<img src="assets/images/forReadme/appInstalationQR.png" width="280" />
+
+---
+
+> [!IMPORTANT]
+>
+> ### Required Permission (Important)
+>
+> To enable full functionality:
+>
+> 1. Open **BrainRot**
+> 2. Tap **"Grant Permission"**
+> 3. Navigate to:
