@@ -1,4 +1,4 @@
-# BrainRot — Track Your Screen Time, Reclaim Your Mind
+# BrainRot - Track Your Screen Time, Reclaim Your Mind
 
 **BrainRot** is an Android app that helps you understand and reduce excessive screen time by visualizing your digital habits in a fun, engaging, and slightly unsettling way.
 
