@@ -1,12 +1,14 @@
+import colors from "@/constants/colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import type { PropsWithChildren } from "react";
 import { Modal, Pressable, View } from "react-native";
 
-type BaseModalProps = {
+type BaseModalProps = PropsWithChildren<{
   visible: boolean;
   onClose: () => void;
-  children: React.ReactNode;
-};
+}>;
 
+/** Centered card with a dimmed backdrop and a close button in the corner. */
 export default function BaseModal({
   visible,
   onClose,
@@ -18,14 +20,14 @@ export default function BaseModal({
       transparent
       visible={visible}
       onRequestClose={onClose}>
-      <View className="flex-1 justify-center items-center bg-black/20">
-        <View className="relative w-[85%] h-fit pb-10 bg-white border-[1px] border-black px-2 rounded-2xl shadow-lg">
+      <View className="flex-1 items-center justify-center bg-black/20">
+        <View className="relative w-[85%] rounded-2xl border border-black bg-white px-2 pb-10 shadow-lg">
           <Pressable
             onPress={onClose}
-            className="absolute top-6 right-6 z-20">
+            className="absolute right-6 top-6 z-20">
             <MaterialIcons
               name="close"
-              color="#000"
+              color={colors.ink}
               size={36}
             />
           </Pressable>

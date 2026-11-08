@@ -1,65 +1,29 @@
-import { requireNativeModule } from "expo-modules-core";
+import { NativeModule, requireNativeModule } from "expo";
+import type {
+  AppUsageStat,
+  DailyStreak,
+  TotalTime,
+  UsageStatsModuleEvents,
+  WeeklyDayTime,
+  WeeklyStreakDay,
+} from "./types";
 
-const UsageStats = requireNativeModule("UsageStats");
+export * from "./types";
 
-export function hasPermission(): boolean {
-  return UsageStats.hasPermission();
+/**
+ * Android-only bridge to UsageStatsManager (see android/…/UsageStatsModule.kt).
+ * Every call is synchronous and returns empty data until usage access is granted.
+ */
+declare class UsageStatsModule extends NativeModule<UsageStatsModuleEvents> {
+  hasPermission(): boolean;
+  /** Opens the system "Usage access" settings screen. */
+  requestPermission(): string;
+  getStats(): AppUsageStat[];
+  sumTime(): TotalTime;
+  getWeeklyTime(): WeeklyDayTime[];
+  getWeeklyAppStats(): AppUsageStat[];
+  getDailyStreak(): DailyStreak;
+  getWeeklyStreak(): WeeklyStreakDay[];
 }
 
-export function requestPermission(): string {
-  return UsageStats.requestPermission();
-}
-
-export function getStats(): {
-  appName: string;
-  appIndex: number;
-  category: string;
-  seconds: number;
-}[] {
-  return UsageStats.getStats();
-}
-
-export function getTotalTimeSpent(): {
-  formatted: string;
-  totalMinutes: number;
-} {
-  return UsageStats.sumTime();
-}
-
-export function getWeeklyTime(): {
-  dayIndex: number;
-  label: string;
-  value: number;
-}[] {
-  return UsageStats.getWeeklyTime();
-}
-
-export function getWeeklyAppStats(): {
-  packageName: string;
-  appName: string;
-  appIndex: number;
-  category: string;
-  seconds: number;
-  icon: string;
-}[] {
-  return UsageStats.getWeeklyAppStats();
-}
-
-export function getDailyStreak(): {
-  streak: number;
-  todayMinutes: number;
-  successToday: boolean;
-  limitMinutes: number;
-} {
-  return UsageStats.getDailyStreak();
-}
-
-export function getWeeklyStreak(): {
-  day: string;
-  minutes: number;
-  success: boolean;
-}[] {
-  return UsageStats.getWeeklyStreak();
-}
-
-export default UsageStats;
+export default requireNativeModule<UsageStatsModule>("UsageStats");

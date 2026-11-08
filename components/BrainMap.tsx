@@ -1,270 +1,191 @@
-import { getFunnyQuote } from "@/hooks/quoteProvider";
-import { useUserApps } from "@/hooks/useUserAppsType";
-import { useMemo, useState } from "react";
-import { Dimensions, Pressable, Text, View } from "react-native";
-import BottomBrain from "./BrainParts/Bottom";
-import MiddleBottomBrain from "./BrainParts/MiddleBottom";
-import MiddleTopBrain from "./BrainParts/MiddleTop";
-import TopBrain from "./BrainParts/Top";
-import Button from "./Button";
+import BrainPartSvg from "@/components/BrainPartSvg";
+import Button from "@/components/Button";
+import { BRAIN_PART_SHAPES } from "@/constants/brainPartShapes";
+import { getFunnyQuote } from "@/constants/quotes";
+import { useBrainPartMinutes } from "@/hooks/useBrainPartMinutes";
+import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
+import type { BrainPartType } from "@/types";
+import { formatMinutes } from "@/utils/time";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
+
+type Region = {
+  key: keyof typeof BRAIN_PART_SHAPES;
+  type: BrainPartType;
+  /** Offset inside the 320px tall map. Each region's hit area is 80px tall. */
+  top: number;
+  /** SVG height relative to the hit area; shapes overlap on purpose. */
+  svgHeight: `${number}%`;
+};
+
+const REGIONS: Region[] = [
+  { key: "top", type: "Health and Productivity", top: 64, svgHeight: "90%" },
+  { key: "middleTop", type: "Social & News", top: 110, svgHeight: "100%" },
+  { key: "middleBottom", type: "Video & Audio", top: 160, svgHeight: "104%" },
+  { key: "bottom", type: "Games", top: 200, svgHeight: "150%" },
+];
+
+/** [base, accent] per band of ROT_BOUNDS, from healthy pink to rotted green. */
+const ROT_PALETTE: [string, string][] = [
+  ["#d65181", "#ad144a"],
+  ["#C86286", "#ad144a"],
+  ["#E6B6C7", "#ad144a"],
+  ["#AAC7A4", "#6B7D6A"],
+  ["#859B80", "#6B7D6A"],
+];
+const ROT_BOUNDS = [60, 90, 120, 150, 240];
+const OVERGROWN: [string, string] = ["#677863", "#677863"];
+
+/** More productive time is good, so that region reads the palette backwards. */
+function regionColors(type: BrainPartType, minutes: number): [string, string] {
+  const band = ROT_BOUNDS.findIndex((bound) => minutes < bound);
+  if (band === -1) return OVERGROWN;
+  const inverted = type === "Health and Productivity";
+  return ROT_PALETTE[inverted ? ROT_PALETTE.length - 1 - band : band];
+}
+
+const LEGEND_COLUMNS = [
+  [
+    { label: "Giga-Brain", swatch: "bg-[#B54673]" },
+    { label: "Fully Conscious", swatch: "bg-[#D16A8E]" },
+    { label: "The First Itch", swatch: "bg-[#EBBDCF]" },
+  ],
+  [
+    { label: "Absolute Rot", swatch: "bg-[#6B7D6A]" },
+    { label: "Chronically Online", swatch: "bg-[#8CA28B]" },
+    { label: "Brain Mush", swatch: "bg-[#ACC1AB]" },
+  ],
+];
+
 export default function BrainMap() {
-  const { topBrainPart, secondBrainPart, thirdBrainPart, bottomBrainPart } =
-    useUserApps();
+  const minutesByPart = useBrainPartMinutes();
+  const [selected, setSelected] = useState<Region | null>(null);
+  const [showRegionInfo, setShowRegionInfo] = useState(false);
 
-  const [infoBrainPartState, setInfoBrainPartState] = useState(false);
-  const [brainPart, setBrainPart] = useState<
-    | "topBrainPart"
-    | "secondBrainPart"
-    | "thirdBrainPart"
-    | "bottomBrainPart"
-    | ""
-  >("");
+  const selectRegion = (region: Region) => {
+    setSelected(region);
+    setShowRegionInfo(true);
+  };
 
-  const { width } = Dimensions.get("window");
-  const isSmall = width < 380;
-
-  const activePart = useMemo(() => {
-    switch (brainPart) {
-      case "topBrainPart":
-        return topBrainPart;
-      case "secondBrainPart":
-        return secondBrainPart;
-      case "thirdBrainPart":
-        return thirdBrainPart;
-      case "bottomBrainPart":
-        return bottomBrainPart;
-      default:
-        return null;
-    }
-  }, [
-    brainPart,
-    topBrainPart,
-    secondBrainPart,
-    thirdBrainPart,
-    bottomBrainPart,
-  ]);
-
-  function getBrainPartColor(
-    value: number,
-    part:
-      | "topBrainPart"
-      | "secondBrainPart"
-      | "thirdBrainPart"
-      | "bottomBrainPart",
-  ) {
-    if (value < 60 && part === "topBrainPart") {
-      return ["#859B80", "#6B7D6A"];
-    }
-    if (value < 90 && part === "topBrainPart") {
-      return ["#AAC7A4", "#6B7D6A"];
-    }
-    if (value < 120 && part === "topBrainPart") {
-      return ["#E6B6C7", "#ad144a"];
-    }
-    if (value < 150 && part === "topBrainPart") {
-      return ["#C86286", "#ad144a"];
-    }
-    if (value < 240 && part === "topBrainPart") {
-      return ["#d65181", "#ad144a"];
-    }
-
-    if (value < 60) return ["#d65181", "#ad144a"];
-    if (value < 90) return ["#C86286", "#ad144a"];
-    if (value < 120) return ["#E6B6C7", "#ad144a"];
-    if (value < 150) return ["#AAC7A4", "#6B7D6A"];
-    if (value < 240) return ["#859B80", "#6B7D6A"];
-
-    return ["#677863", "#677863"];
-  }
-
-  const topColor = useMemo(
-    () => getBrainPartColor(topBrainPart.time, "topBrainPart"),
-    [topBrainPart],
-  );
-
-  const secondColor = useMemo(
-    () => getBrainPartColor(secondBrainPart.time, "secondBrainPart"),
-    [secondBrainPart],
-  );
-
-  const thirdColor = useMemo(
-    () => getBrainPartColor(thirdBrainPart.time, "thirdBrainPart"),
-    [thirdBrainPart],
-  );
-
-  const bottomColor = useMemo(
-    () => getBrainPartColor(bottomBrainPart.time, "bottomBrainPart"),
-    [bottomBrainPart],
-  );
   return (
     <>
-      <View style={{ position: "relative", height: 320 }}>
-        <Pressable
-          onPress={() => {
-            setBrainPart("topBrainPart");
-            setInfoBrainPartState(true);
-          }}
-          className="absolute w-full left-0 top-16 h-20 "
-          style={{
-            transform: [{ scale: brainPart === "topBrainPart" ? 1.1 : 1 }],
-          }}>
-          <TopBrain
-            width="100%"
-            height="90%"
-            fill={topColor[0]}
-            color1={topColor[1]}
-            color2={topColor[0]}
-          />
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            setBrainPart("secondBrainPart");
-            setInfoBrainPartState(true);
-          }}
-          className="absolute w-full left-0 h-20"
-          style={{
-            top: 110,
-            transform: [{ scale: brainPart === "secondBrainPart" ? 1.1 : 1 }],
-          }}>
-          <MiddleTopBrain
-            width="100%"
-            height="100%"
-            fill={secondColor[0]}
-            color1={secondColor[1]}
-            color2={secondColor[0]}
-          />
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            setInfoBrainPartState(true);
-            setBrainPart("thirdBrainPart");
-          }}
-          className="absolute w-full left-0 h-20"
-          style={{
-            top: 160,
-            transform: [{ scale: brainPart === "thirdBrainPart" ? 1.1 : 1 }],
-          }}>
-          <MiddleBottomBrain
-            width="100%"
-            height="104%"
-            fill={thirdColor[0]}
-            color1={thirdColor[1]}
-            color2={thirdColor[0]}
-          />
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            setInfoBrainPartState(true);
-            setBrainPart("bottomBrainPart");
-          }}
-          className="absolute w-full left-0  h-20"
-          style={{
-            top: 200,
-            transform: [{ scale: brainPart === "bottomBrainPart" ? 1.1 : 1 }],
-          }}>
-          <BottomBrain
-            width="100%"
-            height="150%"
-            fill={bottomColor[0]}
-            color1={bottomColor[1]}
-            color2={bottomColor[0]}
-          />
-        </Pressable>
+      <View style={{ height: 320 }}>
+        {REGIONS.map((region) => {
+          const [base, accent] = regionColors(
+            region.type,
+            minutesByPart[region.type],
+          );
+          return (
+            <Pressable
+              key={region.key}
+              onPress={() => selectRegion(region)}
+              className="absolute left-0 h-20 w-full"
+              style={{
+                top: region.top,
+                transform: [{ scale: selected?.key === region.key ? 1.1 : 1 }],
+              }}>
+              <BrainPartSvg
+                shape={BRAIN_PART_SHAPES[region.key]}
+                height={region.svgHeight}
+                baseColor={base}
+                accentColor={accent}
+              />
+            </Pressable>
+          );
+        })}
       </View>
-      <View className="flex flex-row justify-between mx-6 mb-4">
+
+      <View className="mx-6 mb-4 flex-row justify-between">
         <Button
           title="Brain Info"
           variant="info"
-          active={infoBrainPartState ? true : false}
-          onPress={() => setInfoBrainPartState(true)}
+          active={showRegionInfo}
+          onPress={() => setShowRegionInfo(true)}
         />
-
         <Button
           title="Color Info"
           variant="info"
-          active={infoBrainPartState ? false : true}
-          onPress={() => setInfoBrainPartState(false)}
+          active={!showRegionInfo}
+          onPress={() => setShowRegionInfo(false)}
         />
       </View>
-      <View className="flex-row gap-4 mx-6 border-[#ad144a] rounded-md border-2 px-3 py-2 justify-between items-center ">
-        {infoBrainPartState ? (
-          <View className="w-full">
-            {brainPart === "" ? (
-              <Text className="font-['SpaceGroteskMedium'] text-xl text-center">
-                Please select a{" "}
-                <Text className="text-primary-700">brain part</Text> to see more
-              </Text>
-            ) : (
-              <View className="py-2 gap-1">
-                <Text className="w-full text-center text-xl font-['SpaceGroteskMedium']">
-                  {activePart?.type}
-                </Text>
 
-                <Text className="font-['SpaceGroteskRegular'] text-lg">
-                  {activePart?.type === "Health and Productivity"
-                    ? "Focus Time: "
-                    : "Wasted Time: "}
-                  <Text className="text-primary-700 font-['SpaceGroteskBold']">
-                    {Math.floor((activePart?.time ?? 0) / 60)}h{" "}
-                    {(activePart?.time ?? 0) % 60}m
-                  </Text>
-                </Text>
-
-                <Text className="italic text-gray-600 font-['SpaceGroteskRegular'] text-md">
-                  &quot;
-                  {getFunnyQuote(
-                    activePart?.type || "Games",
-                    activePart?.time || 0,
-                  )}
-                  &quot;
-                </Text>
-              </View>
-            )}
-          </View>
+      <View className="mx-6 flex-row items-center justify-between gap-4 rounded-md border-2 border-[#ad144a] px-3 py-2">
+        {showRegionInfo ? (
+          <RegionInfo
+            region={selected}
+            minutes={selected ? minutesByPart[selected.type] : 0}
+          />
         ) : (
-          <>
-            <View className="gap-y-3">
-              {[
-                { label: "Giga-Brain", color: "bg-[#B54673]" },
-                { label: "Fully Conscious", color: "bg-[#D16A8E]" },
-                { label: "The First Itch", color: "bg-[#EBBDCF]" },
-              ].map((item) => (
-                <View
-                  key={item.label}
-                  className={`flex-row items-center ${isSmall ? "gap-x-2" : "gap-x-3"} h-10`}>
-                  <View
-                    className={`${isSmall ? "w-5 h-5" : "w-7 h-7"} rounded-md ${item.color}`}
-                  />
-                  <Text
-                    className={`${isSmall ? "text-base leading-5 max-w-[80px]" : "text-md max-w-[92px]"} font-['SpaceGroteskRegular'] text-gray-800`}>
-                    {item.label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            <View className="gap-y-3">
-              {[
-                { label: "Absolute Rot", color: "bg-[#6B7D6A]" },
-                { label: "Chronically Online", color: "bg-[#8CA28B]" },
-                { label: "Brain Mush", color: "bg-[#ACC1AB]" },
-              ].map((item) => (
-                <View
-                  key={item.label}
-                  className={`flex-row items-center ${isSmall ? "gap-x-2" : "gap-x-3"} h-10`}>
-                  <View
-                    className={`${isSmall ? "w-5 h-5" : "w-7 h-7"} rounded-md ${item.color}`}
-                  />
-                  <Text
-                    className={`${isSmall ? "text-base leading-5 max-w-[80px]" : "text-md max-w-[92px]"} font-['SpaceGroteskRegular'] text-gray-800`}>
-                    {item.label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </>
+          <Legend />
         )}
       </View>
+    </>
+  );
+}
+
+function RegionInfo({
+  region,
+  minutes,
+}: {
+  region: Region | null;
+  minutes: number;
+}) {
+  if (!region) {
+    return (
+      <View className="w-full">
+        <Text className="text-center font-['SpaceGroteskMedium'] text-xl">
+          Please select a <Text className="text-primary-700">brain part</Text>{" "}
+          to see more
+        </Text>
+      </View>
+    );
+  }
+
+  const isProductive = region.type === "Health and Productivity";
+
+  return (
+    <View className="w-full gap-1 py-2">
+      <Text className="w-full text-center font-['SpaceGroteskMedium'] text-xl">
+        {region.type}
+      </Text>
+      <Text className="font-['SpaceGroteskRegular'] text-lg">
+        {isProductive ? "Focus Time: " : "Wasted Time: "}
+        <Text className="font-['SpaceGroteskBold'] text-primary-700">
+          {formatMinutes(minutes)}
+        </Text>
+      </Text>
+      <Text className="text-md font-['SpaceGroteskRegular'] italic text-gray-600">
+        &quot;{getFunnyQuote(region.type, minutes)}&quot;
+      </Text>
+    </View>
+  );
+}
+
+function Legend() {
+  const isSmall = useIsSmallScreen();
+
+  return (
+    <>
+      {LEGEND_COLUMNS.map((column, columnIndex) => (
+        <View
+          key={columnIndex}
+          className="gap-y-3">
+          {column.map((item) => (
+            <View
+              key={item.label}
+              className={`h-10 flex-row items-center ${isSmall ? "gap-x-2" : "gap-x-3"}`}>
+              <View
+                className={`rounded-md ${item.swatch} ${isSmall ? "h-5 w-5" : "h-7 w-7"}`}
+              />
+              <Text
+                className={`font-['SpaceGroteskRegular'] text-gray-800 ${isSmall ? "max-w-[80px] text-base leading-5" : "text-md max-w-[92px]"}`}>
+                {item.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ))}
     </>
   );
 }

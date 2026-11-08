@@ -1,8 +1,8 @@
 import { useTheme } from "@/hooks/useTheme";
 import { Image } from "expo-image";
-import { useMemo } from "react";
 
-const brainImages = [
+/** One illustration per rot stage, index 0 = stage 1. */
+const BRAIN_BY_STAGE = [
   require("@/assets/images/mainBrain/1_stage_Brain.png"),
   require("@/assets/images/mainBrain/2_stage_Brain.png"),
   require("@/assets/images/mainBrain/3_stage_Brain.png"),
@@ -12,16 +12,11 @@ const brainImages = [
 ];
 
 export default function MainImage() {
-  const theme = useTheme();
-
-  const source = useMemo(() => {
-    const idx = theme.value - 1;
-    return brainImages[idx] ?? brainImages[brainImages.length - 1];
-  }, [theme.value]);
+  const { stage } = useTheme();
 
   return (
     <Image
-      source={source}
+      source={BRAIN_BY_STAGE[stage - 1]}
       style={{ width: "100%", height: undefined, aspectRatio: 1 }}
       contentFit="contain"
       cachePolicy="memory-disk"

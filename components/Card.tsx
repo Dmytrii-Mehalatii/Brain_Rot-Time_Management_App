@@ -1,59 +1,52 @@
 import { useTheme } from "@/hooks/useTheme";
 import type { LucideIcon } from "lucide-react-native";
-import * as LucideIcons from "lucide-react-native";
 import { Text, View } from "react-native";
 
 type CardProps = {
-  iconName: keyof typeof LucideIcons;
-  isFullWidth?: boolean;
+  icon: LucideIcon;
   title: string;
   description: string;
+  isFullWidth?: boolean;
 };
 
+/** Numbers and their units, e.g. "3.2 km" or "~900 kcal", get the theme color. */
+const HIGHLIGHT = /(\d+(?:\.\d+)?(?: ?(?:km|kcal))?)/;
+
 export default function Card({
-  iconName,
-  isFullWidth,
+  icon: Icon,
   title,
   description,
+  isFullWidth = false,
 }: CardProps) {
   const { themeColor } = useTheme();
-  // eslint-disable-next-line import/namespace
-  const Icon = LucideIcons[iconName] as LucideIcon | undefined;
-
-  const renderDescription = (text: string) => {
-    const parts = text.split(/(\d+|two weeks|\d+ km|\d+ kcal)/g);
-    return parts.map((part, i) => (
-      <Text
-        key={i}
-        style={
-          /(\d+|two weeks|km|kcal)/.test(part)
-            ? { color: themeColor, fontWeight: "600" }
-            : {}
-        }>
-        {part}
-      </Text>
-    ));
-  };
 
   return (
     <View
       style={{ borderColor: themeColor }}
-      className={`border-[2px] rounded-lg p-3 gap-2 h-fit min-h-[100px] ${
-        isFullWidth ? "w-full" : "flex-1"
-      }`}>
+      className={`min-h-[100px] gap-2 rounded-lg border-2 p-3 ${isFullWidth ? "w-full" : "flex-1"}`}>
       <View className="flex-row items-center gap-2">
-        {Icon && (
-          <Icon
-            size={18}
-            color="#333"
-          />
-        )}
-        <Text className="font-['SpaceGroteskMedium'] text-[14px] text-gray-900 flex-1">
+        <Icon
+          size={18}
+          color="#333"
+        />
+        <Text className="flex-1 font-['SpaceGroteskMedium'] text-[14px] text-gray-900">
           {title}
         </Text>
       </View>
-      <Text className="font-['SpaceGroteskRegular'] text-[13px] leading-4 text-[#212121]">
-        {renderDescription(description)}
+      <Text className="font-['SpaceGroteskRegular'] text-[13px] leading-4 text-ink">
+        {/* split() with a capture group puts every match at an odd index. */}
+        {description.split(HIGHLIGHT).map((part, index) =>
+          index % 2 === 1 ? (
+            <Text
+              key={index}
+              className="font-['SpaceGroteskMedium']"
+              style={{ color: themeColor }}>
+              {part}
+            </Text>
+          ) : (
+            part
+          ),
+        )}
       </Text>
     </View>
   );

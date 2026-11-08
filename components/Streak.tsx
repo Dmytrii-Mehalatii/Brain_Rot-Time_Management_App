@@ -1,46 +1,31 @@
 import BrainIcon from "@/assets/icons/brain_icon.svg";
-import useStreakStats from "@/hooks/useStreakStats";
-import { WeeklyStreakType } from "@/types";
+import colors from "@/constants/colors";
+import { useStreakStats } from "@/hooks/useStreakStats";
+import type { WeeklyStreakDay } from "@/types";
 import { Image } from "expo-image";
-import React from "react";
 import { Text, View } from "react-native";
 
-const StreakDayItem: React.FC<{ item: WeeklyStreakType }> = React.memo(
-  ({ item }) => {
-    return (
-      <View className="flex items-center justify-center w-full flex-shrink">
-        <BrainIcon
-          fill={item.success ? "#9D1344" : "#677863"}
-          width={32}
-          height={32}
-        />
-        <Text className="text-[#212121] font-['SpaceGroteskRegular'] text-sm text-center ">
-          {item.day === "Today" ? item.day.slice(0, 3) : item.day.slice(0, 1)}
-        </Text>
-      </View>
-    );
-  },
-);
-
-StreakDayItem.displayName = "StreakDayItem";
+const ALIVE = colors.primary[600];
+const BROKEN = colors.secondary[700];
 
 export default function Streak() {
   const { dailyStreak, weeklyStreak } = useStreakStats();
+  const hasStreak = dailyStreak.streak > 0;
 
   return (
     <View className="px-6">
-      <View className="flex flex-row w-full items-center justify-between mt-14">
+      <View className="mt-14 w-full flex-row items-center justify-between">
         <View className="w-full flex-shrink">
           <Text
-            className="font-['SpaceGroteskBold'] text-6xl "
-            style={{ color: dailyStreak.streak > 0 ? "#9D1344" : "#677863" }}>
+            className="font-['SpaceGroteskBold'] text-6xl"
+            style={{ color: hasStreak ? ALIVE : BROKEN }}>
             {dailyStreak.streak}
           </Text>
           <Text className="font-['SpaceGroteskMedium'] text-2xl">
             Day&apos;s Streak
           </Text>
-          <Text className="text-sm opacity-70 mt-1">
-            {dailyStreak.streak > 0
+          <Text className="mt-1 text-sm opacity-70">
+            {hasStreak
               ? "*Stay under 4h today to keep it going!"
               : "*Spend less than 4h today to start your streak!"}
           </Text>
@@ -61,14 +46,30 @@ export default function Streak() {
           cachePolicy="memory-disk"
         />
       </View>
-      <View className="flex flex-row gap-[14] mt-3 items-center justify-center text-center">
-        {weeklyStreak.map((item) => (
-          <StreakDayItem
-            item={item}
-            key={item.day}
+
+      <View className="mt-3 flex-row items-center justify-center gap-[14]">
+        {weeklyStreak.map((day) => (
+          <StreakDay
+            key={day.day}
+            day={day}
           />
         ))}
       </View>
+    </View>
+  );
+}
+
+function StreakDay({ day }: { day: WeeklyStreakDay }) {
+  return (
+    <View className="w-full flex-shrink items-center justify-center">
+      <BrainIcon
+        fill={day.success ? ALIVE : BROKEN}
+        width={32}
+        height={32}
+      />
+      <Text className="text-center font-['SpaceGroteskRegular'] text-sm text-ink">
+        {day.day === "Today" ? day.day.slice(0, 3) : day.day.slice(0, 1)}
+      </Text>
     </View>
   );
 }

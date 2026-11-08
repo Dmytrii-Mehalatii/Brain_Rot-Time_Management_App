@@ -1,27 +1,60 @@
 package expo.modules.usagestats
 
-import java.io.ByteArrayOutputStream;
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.provider.Settings
-import expo.modules.kotlin.modules.Module
-import expo.modules.kotlin.modules.ModuleDefinition
-import expo.modules.kotlin.events.EventEmitter
-import expo.modules.kotlin.events.EventsDefinition
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.content.pm.ApplicationInfo
+import android.os.Build
+import android.os.Process
+import android.provider.Settings
 import android.util.Base64
-import java.util.Calendar
+import expo.modules.kotlin.modules.Module
+import expo.modules.kotlin.modules.ModuleDefinition
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+
+/** A foreground session longer than this almost certainly lost its "paused" event, so it is capped. */
+private const val MAX_SESSION_MS = 60 * 60 * 1000L
+private const val DAILY_LIMIT_MINUTES = 240L
+private const val STREAK_LOOKBACK_DAYS = 30
+/** Icons are shown at 48dp at most; 144px covers 3x screens at a fraction of the full-size payload. */
+private const val ICON_SIZE_PX = 144
+
+/** System UI and this app itself are not screen time the user chose to spend. */
+private val IGNORED_PACKAGES = setOf(
+    "com.google.android.googlequicksearchbox",
+    "com.android.systemui",
+    "com.google.android.googlesdksetup",
+    "com.anonymous.brainrot",
+)
+
+private val NO_TIME: Map<String, Any> = mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
+private val NO_STREAK: Map<String, Any> = mapOf(
+    "streak" to 0,
+    "todayMinutes" to 0L,
+    "successToday" to true,
+    "limitMinutes" to DAILY_LIMIT_MINUTES,
+)
 
 class UsageStatsModule : Module() {
+    private var lastPermissionState: Boolean? = null
+
+    /** Foreground millis per package for finished days, keyed by day start. Finished days never change. */
+    private val finishedDayDurations = mutableMapOf<Long, Map<String, Long>>()
+
+    private val manualCategories: Map<String, String> by lazy { loadManualCategories() }
+
+    private val currentContext: Context?
+        get() = appContext.reactContext
 
     override fun definition() = ModuleDefinition {
         Name("UsageStats")
@@ -29,283 +62,195 @@ class UsageStatsModule : Module() {
         Events("onPermissionChanged")
 
         Function("hasPermission") {
-            val context = appContext.reactContext ?: return@Function false
-            hasUsagePermission(context)
+            currentContext?.let { hasUsagePermission(it) } ?: false
         }
 
         Function("requestPermission") {
-            val context = appContext.reactContext ?: return@Function "no_context"
-            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
+            val ctx = currentContext ?: return@Function "no_context"
+            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            ctx.startActivity(intent)
             "permission_requested"
         }
 
-        Function("getStats") {
-            val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
-            if (!hasUsagePermission(context)) {
-                return@Function emptyList<Map<String, Any>>()
-            }
-            getStatsInternal(context)
-        }
-
-        Function("sumTime") {
-            val context = appContext.reactContext ?: return@Function mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
-            if (!hasUsagePermission(context)) {
-                return@Function mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
-            }
-            getTotalTimeInternal(context)
-        }
-
-        Function("getWeeklyTime") {
-            val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
-            if (!hasUsagePermission(context)) {
-                return@Function emptyList<Map<String, Any>>()
-            }
-            getWeeklyTimeInternal(context)
-        }
-
-        Function("getWeeklyAppStats") {
-            val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
-            if (!hasUsagePermission(context)) {
-                return@Function emptyList<Map<String, Any>>()
-            }
-            getWeeklyAppStatsInternal(context)
-        }
-
-        Function("getDailyStreak") {
-            val context = appContext.reactContext ?: return@Function emptyMap<String, Any>()
-            if (!hasUsagePermission(context)) {
-              return@Function emptyMap<String, Any>()
-            }
-            getDailyStreak(context)
-        }
-
-        Function("getWeeklyStreak") {
-          val context = appContext.reactContext ?: return@Function emptyList<Map<String, Any>>()
-          if (!hasUsagePermission(context)) {
-            return@Function emptyList<Map<String, Any>>()
-          }
-          getWeeklyStreakData(context)
-        }
+        Function("getStats") { withPermission(emptyList()) { todayAppStats(it) } }
+        Function("sumTime") { withPermission(NO_TIME) { totalTimeToday(it) } }
+        Function("getWeeklyTime") { withPermission(emptyList()) { weeklyTime(it) } }
+        Function("getWeeklyAppStats") { withPermission(emptyList()) { weeklyAppStats(it) } }
+        Function("getDailyStreak") { withPermission(NO_STREAK) { dailyStreak(it) } }
+        Function("getWeeklyStreak") { withPermission(emptyList()) { weeklyStreak(it) } }
 
         OnCreate {
-            val context = appContext.reactContext ?: return@OnCreate
+            lastPermissionState = currentContext?.let { hasUsagePermission(it) }
+        }
 
-            val handler = android.os.Handler(android.os.Looper.getMainLooper())
-
-            val runnable = object : Runnable {
-                override fun run() {
-                    checkPermissionAndEmit(context)
-                    handler.postDelayed(this, 1000)
-                }
-            }
-
-            handler.post(runnable)
+        // Usage access can only be toggled in system Settings, so the app coming
+        // back to the foreground is the moment it may have changed.
+        OnActivityEntersForeground {
+            emitIfPermissionChanged()
         }
     }
 
-    private var lastPermissionState: Boolean? = null
+    private inline fun <T> withPermission(fallback: T, block: (Context) -> T): T {
+        val ctx = currentContext ?: return fallback
+        return if (hasUsagePermission(ctx)) block(ctx) else fallback
+    }
 
-    private fun checkPermissionAndEmit(context: Context) {
-
-        val current = hasUsagePermission(context)
-
-        if (lastPermissionState == null) {
-            lastPermissionState = current
-            return
-        }
-        
-        if (current != lastPermissionState) {
-            lastPermissionState = current
-            sendEvent(
-                "onPermissionChanged",
-                mapOf("granted" to current)
-            )
+    private fun emitIfPermissionChanged() {
+        val ctx = currentContext ?: return
+        val granted = hasUsagePermission(ctx)
+        val previous = lastPermissionState
+        lastPermissionState = granted
+        if (previous != null && previous != granted) {
+            sendEvent("onPermissionChanged", mapOf("granted" to granted))
         }
     }
 
-    private fun getTodayStartTime(): Long {
-        return Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-    }
-
-    private fun getDayRange(dayOffset: Int): Pair<Long, Long> {
-        val cal = Calendar.getInstance()
-
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-
-        cal.add(Calendar.DAY_OF_YEAR, -dayOffset)
-        val start = cal.timeInMillis
-
-        cal.add(Calendar.DAY_OF_YEAR, 1)
-        val end = cal.timeInMillis
-
-        return start to end
-    }
-
-
-    private fun hasUsagePermission(context: Context): Boolean {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            android.os.Process.myUid(),
-            context.packageName
-        )
+    private fun hasUsagePermission(ctx: Context): Boolean {
+        val appOps = ctx.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        }
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    private fun getAppDurationsFromEvents(
-        usm: UsageStatsManager,
-        startTime: Long,
-        endTime: Long
-    ): Map<String, Long> {
+    private fun usageStatsManager(ctx: Context): UsageStatsManager? =
+        ctx.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
 
-        val events = usm.queryEvents(startTime, endTime)
-        val event = UsageEvents.Event()
+    // ---- Calendar helpers -------------------------------------------------
 
+    private fun dayStart(daysAgo: Int): Calendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+        add(Calendar.DAY_OF_YEAR, -daysAgo)
+    }
+
+    private fun dayLabel(daysAgo: Int): String {
+        if (daysAgo == 0) return "Today"
+        return SimpleDateFormat("EEE", Locale.ENGLISH).format(dayStart(daysAgo).time)
+    }
+
+    // ---- Foreground durations --------------------------------------------
+
+    /** Foreground millis per package for one calendar day. Today's range ends now, not at midnight. */
+    private fun durationsForDay(usm: UsageStatsManager, daysAgo: Int): Map<String, Long> {
+        val start = dayStart(daysAgo)
+        val startMs = start.timeInMillis
+        val endMs = start.apply { add(Calendar.DAY_OF_YEAR, 1) }.timeInMillis
+        val now = System.currentTimeMillis()
+
+        if (endMs > now) return durationsFromEvents(usm, startMs, now)
+        return finishedDayDurations.getOrPut(startMs) { durationsFromEvents(usm, startMs, endMs) }
+    }
+
+    private fun durationsFromEvents(usm: UsageStatsManager, startMs: Long, endMs: Long): Map<String, Long> {
         val durations = mutableMapOf<String, Long>()
-        val lastStart = mutableMapOf<String, Long>()
+        val openSince = mutableMapOf<String, Long>()
 
-        val MAX_SESSION = 1000L * 60 * 60
-        val STALE_THRESHOLD = 1000L * 60 * 60
+        fun record(pkg: String, sessionStart: Long, sessionEnd: Long) {
+            val duration = (sessionEnd - sessionStart).coerceAtMost(MAX_SESSION_MS)
+            if (duration > 0) durations.merge(pkg, duration) { a, b -> a + b }
+        }
 
+        val events = usm.queryEvents(startMs, endMs)
+        val event = UsageEvents.Event()
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val pkg = event.packageName ?: continue
-
+            // ACTIVITY_RESUMED/PAUSED share their values with the pre-API-29 MOVE_TO_FOREGROUND/BACKGROUND.
             when (event.eventType) {
-
-                UsageEvents.Event.MOVE_TO_FOREGROUND -> {
-                    if (!lastStart.containsKey(pkg)) {
-                        lastStart[pkg] = event.timeStamp
-                    }
-                }
-
-                UsageEvents.Event.MOVE_TO_BACKGROUND -> {
-                    val start = lastStart[pkg]
-                    if (start != null) {
-                        var duration = event.timeStamp - start
-
-                        if (duration > MAX_SESSION) {
-                            duration = MAX_SESSION
-                        }
-
-                        if (duration > 0) {
-                            durations[pkg] = (durations[pkg] ?: 0L) + duration
-                        }
-
-                        lastStart.remove(pkg)
-                    }
-                }
+                UsageEvents.Event.ACTIVITY_RESUMED -> openSince.putIfAbsent(pkg, event.timeStamp)
+                UsageEvents.Event.ACTIVITY_PAUSED -> openSince.remove(pkg)?.let { record(pkg, it, event.timeStamp) }
             }
         }
 
+        // Sessions still open at the end of the range count up to its end, unless they
+        // started so long ago that the matching "paused" event was evidently lost.
         val now = System.currentTimeMillis()
-
-        lastStart.forEach { (pkg, start) ->
-            val age = now - start
-
-            if (age < STALE_THRESHOLD) {
-                var duration = endTime - start
-
-                if (duration > MAX_SESSION) {
-                    duration = MAX_SESSION
-                }
-
-                if (duration > 0) {
-                    durations[pkg] = (durations[pkg] ?: 0L) + duration
-                }
-            }
+        for ((pkg, sessionStart) in openSince) {
+            if (now - sessionStart < MAX_SESSION_MS) record(pkg, sessionStart, endMs)
         }
-
         return durations
     }
 
-    private fun getTotalTimeInternal(context: Context): Map<String, Any> {
-      val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-        ?: return mapOf("formatted" to "0h 0m", "totalMinutes" to 0L)
+    private fun countedMinutes(durations: Map<String, Long>): Long =
+        durations.filterKeys { it !in IGNORED_PACKAGES }.values.sum() / 60_000
 
-      val endTime = System.currentTimeMillis()
-      val startTime = getTodayStartTime()
+    private fun minutesForDay(usm: UsageStatsManager, daysAgo: Int): Long =
+        countedMinutes(durationsForDay(usm, daysAgo))
 
+    // ---- Payloads exposed to JavaScript ----------------------------------
 
-      val blacklistedPackages = listOf("com.google.android.googlequicksearchbox", "com.android.systemui", "com.google.android.googlesdksetup", "com.anonymous.brainrot")
-      val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
-    
-      val totalMs = appDurations.filter { !blacklistedPackages.contains(it.key) }.values.sum()
-      val totalMinutes = totalMs / 1000 / 60
-      val hours = totalMinutes / 60
-      val minutes = totalMinutes % 60
-
-      return mapOf(
-        "formatted" to "${hours}h ${minutes}m",
-        "totalMinutes" to totalMinutes
-      )
+    private fun totalTimeToday(ctx: Context): Map<String, Any> {
+        val usm = usageStatsManager(ctx) ?: return NO_TIME
+        val minutes = minutesForDay(usm, 0)
+        return mapOf(
+            "formatted" to "${minutes / 60}h ${minutes % 60}m",
+            "totalMinutes" to minutes,
+        )
     }
 
-    private fun getWeeklyTimeInternal(context: Context): List<Map<String, Any>> {
-        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-            ?: return emptyList()
-
-        val blacklistedPackages = listOf(
-            "com.google.android.googlequicksearchbox",
-            "com.android.systemui",
-            "com.google.android.googlesdksetup",
-            "com.anonymous.brainrot"
-        )
-
-        val result = mutableListOf<Map<String, Any>>()
-
-        for (i in 6 downTo 0) {
-            val (start, end) = getDayRange(i)
-            val appDurations = getAppDurationsFromEvents(usm, start, end)
-        
-            val totalMs = appDurations
-                .filter { !blacklistedPackages.contains(it.key) }
-                .values
-                .sum()
-        
-            val totalMinutes = totalMs / 1000 / 60
-            val currentIndex = 6 - i
-        
-            result.add(
-                mapOf(
-                    "value" to totalMinutes,
-                    "label" to getDayLabel(start, i == 0),
-                    "dayIndex" to (currentIndex + 1)
-                )
+    private fun weeklyTime(ctx: Context): List<Map<String, Any>> {
+        val usm = usageStatsManager(ctx) ?: return emptyList()
+        return (6 downTo 0).map { daysAgo ->
+            mapOf(
+                "value" to minutesForDay(usm, daysAgo),
+                "label" to dayLabel(daysAgo),
+                "dayIndex" to 7 - daysAgo,
             )
         }
-
-        return result
     }
 
+    private fun todayAppStats(ctx: Context): List<Map<String, Any>> {
+        val usm = usageStatsManager(ctx) ?: return emptyList()
+        return rankedAppStats(ctx, durationsForDay(usm, 0))
+    }
 
-    private fun getManualCategories(context: Context): Map<String, String> {
-        val map = mutableMapOf<String, String>()
-        try {
-            val jsonString = context.assets.open("app_categories.json").bufferedReader().use { it.readText() }
-            val jsonObject = JSONObject(jsonString)
-            jsonObject.keys().forEach { key ->
-                map[key] = jsonObject.getString(key)
+    private fun weeklyAppStats(ctx: Context): List<Map<String, Any>> {
+        val usm = usageStatsManager(ctx) ?: return emptyList()
+        val weekly = mutableMapOf<String, Long>()
+        for (daysAgo in 0..6) {
+            for ((pkg, millis) in durationsForDay(usm, daysAgo)) {
+                weekly.merge(pkg, millis) { a, b -> a + b }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
-        return map
+        return rankedAppStats(ctx, weekly)
     }
 
-    private fun getCategoryString(category: Int): String {
-        return when (category) {
+    /** Ranks apps by time spent and attaches what the UI shows; apps that are gone are skipped. */
+    private fun rankedAppStats(ctx: Context, durations: Map<String, Long>): List<Map<String, Any>> {
+        val pm = ctx.packageManager
+        return durations.entries
+            .filter { it.key !in IGNORED_PACKAGES }
+            .sortedByDescending { it.value }
+            .mapNotNull { (pkg, millis) -> appStat(pm, pkg, millis) }
+            .mapIndexed { index, stat -> stat + ("appIndex" to index + 1) }
+    }
+
+    private fun appStat(pm: PackageManager, pkg: String, millis: Long): Map<String, Any>? {
+        return try {
+            val info = pm.getApplicationInfo(pkg, 0)
+            mapOf(
+                "packageName" to pkg,
+                "appName" to pm.getApplicationLabel(info).toString(),
+                "category" to categoryOf(pkg, info),
+                "seconds" to millis / 1000,
+                "icon" to iconBase64(pm.getApplicationIcon(info)),
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun categoryOf(pkg: String, info: ApplicationInfo): String {
+        manualCategories[pkg]?.let { return it }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return "Undefined"
+        return when (info.category) {
             ApplicationInfo.CATEGORY_GAME -> "Game"
             ApplicationInfo.CATEGORY_AUDIO -> "Audio"
             ApplicationInfo.CATEGORY_VIDEO -> "Video"
@@ -315,236 +260,61 @@ class UsageStatsModule : Module() {
             ApplicationInfo.CATEGORY_MAPS -> "Maps"
             ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
             ApplicationInfo.CATEGORY_ACCESSIBILITY -> "Accessibility"
-            else -> "Undefined" 
+            else -> "Undefined"
         }
     }
 
-    private fun getDayLabel(timeInMillis: Long, isToday: Boolean): String {
-        if (isToday) return "Today"
-
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = timeInMillis
-
-        return when (cal.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.MONDAY -> "Mon"
-            Calendar.TUESDAY -> "Tue"
-            Calendar.WEDNESDAY -> "Wed"
-            Calendar.THURSDAY -> "Thu"
-            Calendar.FRIDAY -> "Fri"
-            Calendar.SATURDAY -> "Sat"
-            Calendar.SUNDAY -> "Sun"
-            else -> ""
+    /** Hand-curated overrides for apps whose Play Store category is missing or unhelpful. */
+    private fun loadManualCategories(): Map<String, String> {
+        val ctx = currentContext ?: return emptyMap()
+        return try {
+            val json = JSONObject(ctx.assets.open("app_categories.json").bufferedReader().use { it.readText() })
+            json.keys().asSequence().associateWith { json.getString(it) }
+        } catch (e: Exception) {
+            emptyMap()
         }
     }
 
-    private fun getStatsInternal(context: Context): List<Map<String, Any>> {
-        val result = mutableListOf<Map<String, Any>>()
-        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager ?: return emptyList()
-        val manualMap = getManualCategories(context) 
-        
-        val cal = Calendar.getInstance()
-
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        val startTime = cal.timeInMillis
-
-        cal.add(Calendar.DAY_OF_YEAR, 1)
-        val endTime = cal.timeInMillis
-        val appDurations = getAppDurationsFromEvents(usm, startTime, endTime)
-        val pm = context.packageManager
-
-        val blacklistedPackages = listOf(
-            "com.google.android.googlequicksearchbox",
-            "com.android.systemui",
-            "com.google.android.googlesdksetup",
-            "com.anonymous.brainrot"
-        )
-
-        val sortedPackages = appDurations.entries
-            .filter { !blacklistedPackages.contains(it.key) }
-            .sortedByDescending { it.value }
-
-        var displayedRank = 1 
-        for ((packageName, timeMs) in sortedPackages) {
-            try {
-                val appInfo = pm.getApplicationInfo(packageName, 0)
-                val appName = pm.getApplicationLabel(appInfo).toString()
-                val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
-
-                val categoryName = manualMap[packageName] ?: run {
-                    val categoryId = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                        appInfo.category
-                    } else {
-                        -1
-                    }
-                    getCategoryString(categoryId) 
-                }
-
-                result.add(
-                    mapOf(
-                        "packageName" to packageName,
-                        "appIndex" to displayedRank,
-                        "appName" to appName,
-                        "category" to categoryName,
-                        "seconds" to timeMs / 1000,
-                        "icon" to iconBase64
-                    )
-                )
-                displayedRank++ 
-            } catch (_: Exception) {}
-        }
-        return result
-    }
-
-    private fun getWeeklyAppStatsInternal(context: Context): List<Map<String, Any>> {
-        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-            ?: return emptyList()
-
-        val pm = context.packageManager
-        val manualMap = getManualCategories(context)
-
-        val blacklistedPackages = listOf(
-            "com.google.android.googlequicksearchbox",
-            "com.android.systemui",
-            "com.google.android.googlesdksetup",
-            "com.anonymous.brainrot"
-        )
-
-        val weeklyDurations = mutableMapOf<String, Long>()
-
-        for (i in 0..6) {
-            val (start, end) = getDayRange(i)
-            val dailyDurations = getAppDurationsFromEvents(usm, start, end)
-
-            dailyDurations.forEach { (pkg, duration) ->
-                weeklyDurations[pkg] = (weeklyDurations[pkg] ?: 0L) + duration
-            }
-        }
-
-        val sortedApps = weeklyDurations.entries
-            .filter { !blacklistedPackages.contains(it.key) }
-            .sortedByDescending { it.value }
-
-        val result = mutableListOf<Map<String, Any>>()
-        var rank = 1
-
-        for ((packageName, timeMs) in sortedApps) {
-            try {
-                val appInfo = pm.getApplicationInfo(packageName, 0)
-                val appName = pm.getApplicationLabel(appInfo).toString()
-                val iconBase64 = drawableToBase64(pm.getApplicationIcon(appInfo))
-
-                val categoryName = manualMap[packageName] ?: run {
-                    val categoryId = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                        appInfo.category
-                    } else {
-                        -1
-                    }
-                    getCategoryString(categoryId)
-                }
-
-                result.add(
-                    mapOf(
-                        "packageName" to packageName,
-                        "appIndex" to rank,
-                        "appName" to appName,
-                        "category" to categoryName,
-                        "seconds" to timeMs / 1000,
-                        "icon" to iconBase64
-                    )
-                )
-                rank++
-            } catch (_: Exception) {}
-        }
-
-        return result
-    }
-
-
-    private fun drawableToBase64(drawable: Drawable): String {
-        val bitmap = if (drawable is BitmapDrawable) {
-            drawable.bitmap
-        } else {
-            val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 96
-            val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 96
-            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
-                val canvas = Canvas(this)
-                drawable.setBounds(0, 0, canvas.width, canvas.height)
-                drawable.draw(canvas)
-            }
-        }
+    private fun iconBase64(drawable: Drawable): String {
+        val bitmap = Bitmap.createBitmap(ICON_SIZE_PX, ICON_SIZE_PX, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
 
         val output = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
-    private fun getTotalMinutesForDay(
-      context: Context,
-      dayOffset: Int
-    ): Long {
-      val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-        ?: return 0L
+    // ---- Streaks ---------------------------------------------------------
 
-      val (start, end) = getDayRange(dayOffset)
-      val blacklistedPackages = listOf(
-        "com.google.android.googlequicksearchbox",
-        "com.android.systemui",
-        "com.google.android.googlesdksetup",
-        "com.anonymous.brainrot"
-      )
+    private fun dailyStreak(ctx: Context): Map<String, Any> {
+        val usm = usageStatsManager(ctx) ?: return NO_STREAK
+        val todayMinutes = minutesForDay(usm, 0)
+        val successToday = todayMinutes < DAILY_LIMIT_MINUTES
 
-      val appDurations = getAppDurationsFromEvents(usm, start, end)
-      val totalMs = appDurations
-        .filter { !blacklistedPackages.contains(it.key) }
-        .values
-        .sum()
+        val streak = if (!successToday) 0 else 1 + (1..STREAK_LOOKBACK_DAYS).asSequence()
+            .map { minutesForDay(usm, it) }
+            .takeWhile { it < DAILY_LIMIT_MINUTES }
+            .count()
 
-      return totalMs / 1000 / 60
-    }
-
-    private fun getDailyStreak(context: Context): Map<String, Any> {
-      val MAX_MINUTES = 240L
-      var streak = 0
-
-      for (i in 0..30) {
-        val minutes = getTotalMinutesForDay(context, i)
-        if (minutes < MAX_MINUTES) {
-          streak++
-        } else {
-          break
-        }
-      }
-
-      val todayMinutes = getTotalMinutesForDay(context, 0)
-      val successToday = todayMinutes < MAX_MINUTES
-
-      return mapOf(
-        "streak" to streak,
-        "todayMinutes" to todayMinutes,
-        "successToday" to successToday,
-        "limitMinutes" to MAX_MINUTES
-      )
-    }
-
-    private fun getWeeklyStreakData(context: Context): List<Map<String, Any>> {
-      val MAX_MINUTES = 240L
-      val result = mutableListOf<Map<String, Any>>()
-
-      for (i in 6 downTo 0) {
-        val minutes = getTotalMinutesForDay(context, i)
-        val (start, _) = getDayRange(i)
-
-        result.add(
-          mapOf(
-            "day" to getDayLabel(start, i == 0),
-            "minutes" to minutes,
-            "success" to (minutes < MAX_MINUTES)
-          )
+        return mapOf(
+            "streak" to streak,
+            "todayMinutes" to todayMinutes,
+            "successToday" to successToday,
+            "limitMinutes" to DAILY_LIMIT_MINUTES,
         )
-      }
-      return result
+    }
+
+    private fun weeklyStreak(ctx: Context): List<Map<String, Any>> {
+        val usm = usageStatsManager(ctx) ?: return emptyList()
+        return (6 downTo 0).map { daysAgo ->
+            val minutes = minutesForDay(usm, daysAgo)
+            mapOf(
+                "day" to dayLabel(daysAgo),
+                "minutes" to minutes,
+                "success" to (minutes < DAILY_LIMIT_MINUTES),
+            )
+        }
     }
 }

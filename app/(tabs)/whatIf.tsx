@@ -1,102 +1,49 @@
 import CardGroup from "@/components/CardGroup";
+import Divider from "@/components/Divider";
+import { WHAT_IF_GROUPS } from "@/constants/whatIfCards";
+import { useDailyStats } from "@/hooks/useDailyStats";
+import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useTheme } from "@/hooks/useTheme";
-import useUserStats from "@/hooks/useUserGenericStats";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback } from "react";
-import { Dimensions, ScrollView, Text } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { Fragment } from "react";
+import { ScrollView, Text } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
+import Animated from "react-native-reanimated";
 
 export default function WhatIf() {
-  const { formatedTime } = useUserStats();
+  const { formattedTime } = useDailyStats();
   const { themeColor } = useTheme();
-
-  const { width: screenWidth } = Dimensions.get("window");
-  const isSmall = screenWidth < 380;
-
-  const translateX = useSharedValue(0);
-
-  const router = useRouter();
-
-  const onRedirect = () => {
-    router.push("/(tabs)/home");
-  };
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const opacity = 1 - Math.abs(translateX.value) / screenWidth;
-
-    return {
-      transform: [{ translateX: translateX.value }],
-      opacity,
-    };
+  const isSmall = useIsSmallScreen();
+  const { gesture, animatedStyle } = useSwipeNavigation({
+    onSwipeRight: "/(tabs)/home",
   });
-
-  const SWIPE_THRESHOLD = screenWidth * 0.2;
-
-  const gesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
-    .failOffsetY([-10, 10])
-    .onUpdate((e) => {
-      if (e.translationX > 0) {
-        translateX.value = e.translationX * 0.6;
-      }
-    })
-    .onEnd(() => {
-      if (translateX.value > SWIPE_THRESHOLD) {
-        translateX.value = withTiming(screenWidth, { duration: 100 }, () => {
-          runOnJS(onRedirect)();
-        });
-      } else {
-        translateX.value = withTiming(0, { duration: 100 });
-      }
-    });
-
-  useFocusEffect(
-    useCallback(() => {
-      translateX.value = 0;
-    }, [translateX]),
-  );
 
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View
-        style={[animatedStyle]}
-        className={`flex-1 mt-8 ${isSmall ? "px-8" : "px-12"} flex-col gap-3 items-center`}>
+        style={animatedStyle}
+        className={`mt-8 flex-1 items-center gap-3 ${isSmall ? "px-8" : "px-12"}`}>
         <Text
           className={`font-['SpaceGroteskMedium'] uppercase ${isSmall ? "text-[22px]" : "text-[24px]"}`}>
           <Text
-            className="lowercase text-[26px]"
+            className="text-[26px] lowercase"
             style={{ color: themeColor }}>
-            {formatedTime}
+            {formattedTime}
           </Text>{" "}
-          Whats the cost?
+          What&apos;s the cost?
         </Text>
 
         <ScrollView
-          showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}>
-          <CardGroup
-            type="knowledge"
-            title="Knowledge and Development:"
-          />
-          <CardGroup
-            type="health"
-            title="Health and Body:"
-          />
-          <CardGroup
-            type="creativity"
-            title="Creativity:"
-          />
-          <CardGroup
-            type="universal"
-            title="Universal:"
-          />
+          {WHAT_IF_GROUPS.map((group, index) => (
+            <Fragment key={group.key}>
+              <CardGroup group={group} />
+              {index < WHAT_IF_GROUPS.length - 1 && (
+                <Divider className="mt-4" />
+              )}
+            </Fragment>
+          ))}
         </ScrollView>
       </Animated.View>
     </GestureDetector>

@@ -1,36 +1,31 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createStrictContext } from "@/utils/createStrictContext";
+import { useState, type PropsWithChildren } from "react";
 
-type ActiveModal = "brain" | "streak" | "weeklyEnemies" | "enemies" | null;
+export type ActiveModal = "brain" | "streak" | "enemies" | "weeklyEnemies";
 
-type ModalContextProps = {
-  activeModal: ActiveModal;
-  setActiveModal: React.Dispatch<React.SetStateAction<ActiveModal>>;
+type ModalState = {
+  activeModal: ActiveModal | null;
+  openModal: (modal: ActiveModal) => void;
+  closeModal: () => void;
 };
 
-const ModalContext = createContext<ModalContextProps | null>(null);
+const [ModalContextProvider, useModal] =
+  createStrictContext<ModalState>("ModalProvider");
 
-export default function BrainMapProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
+/** Only one modal is open at a time, so a single piece of state names which. */
+export function ModalProvider({ children }: PropsWithChildren) {
+  const [activeModal, setActiveModal] = useState<ActiveModal | null>(null);
 
   return (
-    <ModalContext.Provider
+    <ModalContextProvider
       value={{
         activeModal,
-        setActiveModal,
+        openModal: setActiveModal,
+        closeModal: () => setActiveModal(null),
       }}>
       {children}
-    </ModalContext.Provider>
+    </ModalContextProvider>
   );
 }
 
-export function useModal() {
-  const ctx = useContext(ModalContext);
-  if (!ctx) {
-    throw new Error("useModal must be used within a BrainMapProvider");
-  }
-  return ctx;
-}
+export { useModal };

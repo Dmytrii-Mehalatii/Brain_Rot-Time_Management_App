@@ -4,8 +4,19 @@ type ButtonProps = {
   title: string;
   onPress: () => void;
   variant?: "info" | "primary";
+  /** Only meaningful for the "info" variant, which fills in when active. */
   active?: boolean;
   className?: string;
+};
+
+const CONTAINER = {
+  info: "border-2 border-primary-500 w-[120px] h-10",
+  primary: "bg-primary-500 px-8 py-4 border-[1.5px] border-primary-800",
+};
+
+const LABEL = {
+  info: "font-['SpaceGroteskMedium']",
+  primary: "text-white text-center text-xl font-['SpaceGroteskMedium']",
 };
 
 export default function Button({
@@ -13,37 +24,17 @@ export default function Button({
   onPress,
   variant = "primary",
   active = false,
-  className,
+  className = "",
 }: ButtonProps) {
-  const baseStyle = "flex items-center justify-center rounded-md z-20";
-
-  const variants = {
-    info: `
-      border-2 border-primary-500 w-[120px] h-10
-      ${active ? "bg-primary-500" : ""}
-    `,
-    primary: `
-      bg-primary-500 px-8 py-4
-      border-[1.5px] border-primary-800
-    `,
-  };
-
-  const textVariants = {
-    info: `
-      font-['SpaceGroteskMedium']
-      ${active ? "text-white" : ""}
-    `,
-    primary: `
-      text-white text-center text-xl
-      font-['SpaceGroteskMedium']
-    `,
-  };
+  const filled = variant === "info" && active;
 
   return (
     <Pressable
       onPress={onPress}
-      className={`${baseStyle} ${variants[variant]} ${className}`}>
-      <Text className={textVariants[variant]}>{title}</Text>
+      className={`z-20 items-center justify-center rounded-md ${CONTAINER[variant]} ${filled ? "bg-primary-500" : ""} ${className}`}>
+      <Text className={`${LABEL[variant]} ${filled ? "text-white" : ""}`}>
+        {title}
+      </Text>
     </Pressable>
   );
 }

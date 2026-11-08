@@ -1,61 +1,41 @@
-import Home from "@/assets/icons/home.svg";
-import Overview from "@/assets/icons/overview.svg";
-import Search from "@/assets/icons/search.svg";
+import HomeIcon from "@/assets/icons/home.svg";
+import OverviewIcon from "@/assets/icons/overview.svg";
+import SearchIcon from "@/assets/icons/search.svg";
 import { TabButton } from "@/components/TabButton";
 import { useTheme } from "@/hooks/useTheme";
 import { TabList, Tabs, TabSlot, TabTrigger } from "expo-router/ui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function Layout() {
+const TABS = [
+  { name: "stats", href: "/stats", icon: SearchIcon },
+  { name: "home", href: "/home", icon: HomeIcon },
+  { name: "whatIf", href: "/whatIf", icon: OverviewIcon },
+] as const;
+
+export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const { themeColor } = useTheme();
+
   return (
     <Tabs>
       <TabSlot />
 
       <TabList
-        className="flex border-t-[1px] border-t-primary-700 gap-14 items-center"
+        className="items-center justify-center gap-14 border-t"
         style={{
-          borderTopColor: `${themeColor}`,
+          borderTopColor: themeColor,
           paddingBottom: insets.bottom,
           height: 60 + insets.bottom,
-          justifyContent: "center",
         }}>
-        <TabTrigger
-          name="stats"
-          href="/stats"
-          asChild>
-          <TabButton>
-            <Search
-              width={36}
-              height={36}
-            />
-          </TabButton>
-        </TabTrigger>
-
-        <TabTrigger
-          name="home"
-          href="/home"
-          asChild>
-          <TabButton>
-            <Home
-              width={36}
-              height={36}
-            />
-          </TabButton>
-        </TabTrigger>
-
-        <TabTrigger
-          name="whatIf"
-          href="/whatIf"
-          asChild>
-          <TabButton>
-            <Overview
-              width={36}
-              height={36}
-            />
-          </TabButton>
-        </TabTrigger>
+        {TABS.map((tab) => (
+          <TabTrigger
+            key={tab.name}
+            name={tab.name}
+            href={tab.href}
+            asChild>
+            <TabButton icon={tab.icon} />
+          </TabTrigger>
+        ))}
       </TabList>
     </Tabs>
   );

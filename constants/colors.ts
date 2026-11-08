@@ -1,4 +1,7 @@
-module.exports = {
+// Single source of truth for the palette. Tailwind reads it in tailwind.config.js,
+// components import it for anything that has to be set through `style`.
+const colors = {
+  ink: "#212121",
   primary: {
     50: "#F7E8ED",
     100: "#E6B6C7",
@@ -21,4 +24,6 @@ module.exports = {
     700: "#677863",
     800: "#4F5C4C",
   },
-};
+} as const;
+
+export default colors;

@@ -1,56 +1,46 @@
-import UsageStats from "@/modules/usage-stats";
-import { createContext, useContext, useEffect, useState } from "react";
+import colors from "@/constants/colors";
+import { createStrictContext } from "@/utils/createStrictContext";
+import type { PropsWithChildren } from "react";
+import { useDailyStats } from "./useDailyStats";
 
-type ThemeContextType = {
-  value: number;
-  setValue: (v: number) => void;
+/** Upper bound of today's minutes for each rot stage; past the last bound is the final stage. */
+const STAGE_UPPER_BOUNDS = [120, 180, 270, 360, 420];
+
+const STAGE_COLORS = [
+  colors.primary[600],
+  colors.primary[500],
+  colors.primary[500],
+  colors.secondary[600],
+  colors.secondary[700],
+  colors.secondary[800],
+];
+
+export const ROT_STAGES = STAGE_COLORS.length;
+
+type Theme = {
+  /** 1 (fresh) … ROT_STAGES (fully rotted), driven by today's screen time. */
+  stage: number;
   themeColor: string;
 };
 
-const ThemeContext = createContext<ThemeContextType | null>(null);
+const [ThemeContextProvider, useTheme] =
+  createStrictContext<Theme>("ThemeProvider");
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const themeColors: Record<number, string> = {
-    1: "#9D1344",
-    2: "#AD154B",
-    3: "#AD154B",
-    4: "#859B80",
-    5: "#677863",
-    6: "#4F5C4C",
-  };
+export function rotStage(totalMinutes: number): number {
+  const index = STAGE_UPPER_BOUNDS.findIndex((bound) => totalMinutes <= bound);
+  return index === -1 ? ROT_STAGES : index + 1;
+}
 
-  const [value, setValue] = useState(1);
-  const themeColor = themeColors[value];
-
-  const { totalMinutes } = UsageStats.sumTime();
-
-  useEffect(() => {
-    if (totalMinutes <= 120) {
-      setValue(1);
-    } else if (totalMinutes > 120 && totalMinutes <= 180) {
-      setValue(2);
-    } else if (totalMinutes > 180 && totalMinutes <= 270) {
-      setValue(3);
-    } else if (totalMinutes > 270 && totalMinutes <= 360) {
-      setValue(4);
-    } else if (totalMinutes > 360 && totalMinutes <= 420) {
-      setValue(5);
-    } else {
-      setValue(6);
-    }
-  }, [totalMinutes]);
+export function ThemeProvider({ children }: PropsWithChildren) {
+  const { totalMinutes } = useDailyStats();
+  const stage = rotStage(totalMinutes);
 
   return (
-    <ThemeContext.Provider value={{ value, setValue, themeColor }}>
+    <ThemeContextProvider
+      value={{ stage, themeColor: STAGE_COLORS[stage - 1] }}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContextProvider>
   );
 }
 
-export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) {
-    throw new Error("useTheme must be used within useThemeProvider");
-  }
-  return ctx;
-}
+export { useTheme };

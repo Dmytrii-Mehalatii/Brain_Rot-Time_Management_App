@@ -1,217 +1,186 @@
+import AppIcon from "@/components/AppIcon";
+import Divider from "@/components/Divider";
+import colors from "@/constants/colors";
+import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
 import { useTheme } from "@/hooks/useTheme";
-import { GenericStatsType } from "@/types";
+import type { AppUsageStat } from "@/types";
+import { formatMinutes, secondsToMinutes } from "@/utils/time";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Image } from "expo-image";
+import { FlashList } from "@shopify/flash-list";
 import { LinearGradient } from "expo-linear-gradient";
-import { useCallback, useEffect } from "react";
-import {
-  Modal,
-  Pressable,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { useEffect } from "react";
+import { Modal, Pressable, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import CustomFlatList from "./CustomFlatList";
+import { scheduleOnRN } from "react-native-worklets";
 
-type Props = {
-  isVisible: boolean;
-  setIsVisible: (v: boolean) => void;
-  stats: GenericStatsType[];
-  date: "day" | "week";
+type EnemyModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  /** Ranked apps; the first three become the podium. */
+  apps: AppUsageStat[];
+  period: "day" | "week";
 };
 
+const RANK_TITLES: Record<number, string> = {
+  1: "Final Boss",
+  2: "Brain Melter",
+  3: "Time Eater",
+};
+
+/** Dragging the sheet down further than this closes it. */
+const CLOSE_DRAG_DISTANCE = 240;
+/** Beyond this many apps the list scrolls, so hint at it with a fade. */
+const SCROLL_HINT_THRESHOLD = 8;
+
 export default function EnemyModal({
-  isVisible,
-  setIsVisible,
-  stats,
-  date,
-}: Props) {
+  visible,
+  onClose,
+  apps,
+  period,
+}: EnemyModalProps) {
   const { themeColor } = useTheme();
-
-  const swapedArray = [...stats.slice(0, 3)];
-  [swapedArray[0], swapedArray[1]] = [swapedArray[1], swapedArray[0]];
-
+  const isSmall = useIsSmallScreen();
   const translateY = useSharedValue(0);
 
-  const onCloseModal = useCallback(() => {
-    setIsVisible(false);
-  }, [setIsVisible]);
+  // Winner in the middle, runner-up on the left, like a podium.
+  const podium = [apps[1], apps[0], apps[2]].filter(Boolean);
+  const rest = apps.slice(3);
 
   useEffect(() => {
-    if (isVisible) {
-      translateY.value = 0;
-    }
-  }, [isVisible, translateY]);
+    if (visible) translateY.value = 0;
+  }, [visible, translateY]);
 
-  const panGesture = Gesture.Pan()
-    .onUpdate((e) => {
-      if (e.translationY > 0) {
-        translateY.value = e.translationY;
-      }
+  const dragToClose = Gesture.Pan()
+    .onUpdate((event) => {
+      if (event.translationY > 0) translateY.value = event.translationY;
     })
     .onEnd(() => {
-      if (translateY.value > 240) {
-        runOnJS(onCloseModal)();
+      if (translateY.value > CLOSE_DRAG_DISTANCE) {
+        scheduleOnRN(onClose);
       } else {
         translateY.value = withTiming(0, { duration: 150 });
       }
     });
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
-
-  const { width: screenWidth } = useWindowDimensions();
-  const isSmall = screenWidth < 380;
 
   return (
     <Modal
       animationType="slide"
       transparent
-      visible={isVisible}>
-      <View className="w-full h-full">
-        <GestureHandlerRootView>
-          <Animated.View
-            style={[animatedStyle]}
-            className="h-[70%] rounded-t-3xl absolute bottom-0 border-[#000] border-t-[1.5px] px-12 border-x-[1.5px] bg-white w-full opacity-100">
-            <GestureDetector gesture={panGesture}>
-              <View>
-                <View className="flex-row w-full justify-between items-center mt-6">
-                  <Text
-                    style={{ fontFamily: "SpaceGroteskRegular" }}
-                    className={`color-[#212121] text-2xl max-w-[80%] flex-shrink`}>
-                    {date === "day" ? "Today's" : "Weekly"} Biggest Enemies:
-                  </Text>
-                  <Pressable onPress={() => setIsVisible(false)}>
-                    <MaterialIcons
-                      name="close"
-                      color="#000"
-                      size={32}
-                      className="mt-1"
-                    />
-                  </Pressable>
-                </View>
-
-                <View className="mt-5">
-                  <CustomFlatList
-                    data={swapedArray}
-                    isHorizontal={true}
-                    isScrollEnabled={false}
-                    renderItem={(item, { hours, minutes }) => (
-                      <View
-                        style={{
-                          marginTop:
-                            item.appIndex === 2 || item.appIndex === 3 ? 32 : 0,
-                        }}
-                        className={`items-center ${isSmall ? "w-[80px] mx-2" : "w-[108px]"}`}>
-                        <Text
-                          numberOfLines={2}
-                          ellipsizeMode="tail"
-                          style={{ fontFamily: "SpaceGroteskMedium" }}
-                          className="text-center text-base mb-1">
-                          <Text
-                            style={{
-                              fontFamily: "SpaceGroteskBold",
-                              color: themeColor,
-                            }}
-                            className={`${isSmall ? "text-base" : "text-lg"}`}>
-                            {item.appIndex}
-                          </Text>{" "}
-                          {item.appIndex === 1
-                            ? "Final Boss"
-                            : item.appIndex === 2
-                              ? "Brain Melter"
-                              : "Time Eater"}
-                        </Text>
-
-                        <Image
-                          source={{
-                            uri: `data:image/png;base64,${item.icon}`,
-                          }}
-                          style={{
-                            width: 48,
-                            height: 48,
-                            marginVertical: 8,
-                          }}
-                        />
-
-                        <Text
-                          style={{
-                            fontFamily: "SpaceGroteskRegular",
-                            color: themeColor,
-                          }}
-                          className="text-center font-bold mt-1">
-                          {hours > 0 ? `${hours}h ` : ""}
-                          {minutes}m
-                        </Text>
-                      </View>
-                    )}
+      visible={visible}
+      onRequestClose={onClose}>
+      {/* A Modal is a separate native window, so gestures need their own root. */}
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Animated.View
+          style={sheetStyle}
+          className="absolute bottom-0 h-[70%] w-full rounded-t-3xl border-x-[1.5px] border-t-[1.5px] border-black bg-white px-12">
+          <GestureDetector gesture={dragToClose}>
+            <View>
+              <View className="mt-6 w-full flex-row items-center justify-between">
+                <Text className="max-w-[80%] flex-shrink font-['SpaceGroteskRegular'] text-2xl text-ink">
+                  {period === "day" ? "Today's" : "Weekly"} Biggest Enemies:
+                </Text>
+                <Pressable onPress={onClose}>
+                  <MaterialIcons
+                    name="close"
+                    color={colors.ink}
+                    size={32}
+                    className="mt-1"
                   />
-                </View>
+                </Pressable>
               </View>
-            </GestureDetector>
 
-            <View className="bg-black h-[1px] my-6" />
-
-            <View className="flex-1 overflow-hidden">
-              <CustomFlatList
-                isHorizontal={false}
-                isScrollEnabled={true}
-                data={stats.slice(3)}
-                renderItem={(item, { hours, minutes }) => (
-                  <View className="flex-row items-center h-fit py-4 border-b-gray-300 border-b-[1px] mb-2">
-                    <Text className="font-['SpaceGroteskMedium'] mr-3">
-                      {item.appIndex}
-                    </Text>
-                    <Image
-                      source={{
-                        uri: `data:image/png;base64,${item.icon}`,
-                      }}
-                      style={{ width: 28, height: 28 }}
-                    />
+              <View className="mt-5 flex-row">
+                {podium.map((app) => (
+                  <View
+                    key={app.packageName}
+                    className={`items-center ${isSmall ? "mx-2 w-[80px]" : "w-[108px]"}`}
+                    style={{ marginTop: app.appIndex === 1 ? 0 : 32 }}>
                     <Text
-                      className="w-full mx-3 flex-shrink font-['SpaceGroteskRegular']"
-                      numberOfLines={1}>
-                      {item.appName}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                      className="mb-1 text-center font-['SpaceGroteskMedium'] text-base">
+                      <Text
+                        className={`font-['SpaceGroteskBold'] ${isSmall ? "text-base" : "text-lg"}`}
+                        style={{ color: themeColor }}>
+                        {app.appIndex}
+                      </Text>{" "}
+                      {RANK_TITLES[app.appIndex] ?? RANK_TITLES[3]}
                     </Text>
-
+                    <View className="my-2">
+                      <AppIcon
+                        icon={app.icon}
+                        size={48}
+                      />
+                    </View>
                     <Text
-                      style={{
-                        fontFamily: "SpaceGroteskMedium",
-                        color: themeColor,
-                      }}>
-                      {hours}h {minutes}m
+                      className="mt-1 text-center font-['SpaceGroteskRegular'] font-bold"
+                      style={{ color: themeColor }}>
+                      {formatMinutes(secondsToMinutes(app.seconds), {
+                        omitZeroHours: true,
+                      })}
                     </Text>
                   </View>
-                )}
-              />
-              {stats.length > 8 && (
-                <LinearGradient
-                  colors={["transparent", "rgba(0,0,0,0.05)"]}
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 40,
-                  }}
-                />
-              )}
+                ))}
+              </View>
             </View>
-          </Animated.View>
-        </GestureHandlerRootView>
-      </View>
+          </GestureDetector>
+
+          <Divider className="my-6" />
+
+          <View className="flex-1 overflow-hidden">
+            <FlashList
+              data={rest}
+              keyExtractor={(app) => app.packageName}
+              renderItem={({ item: app }) => (
+                <View className="mb-2 flex-row items-center border-b border-b-gray-300 py-4">
+                  <Text className="mr-3 font-['SpaceGroteskMedium']">
+                    {app.appIndex}
+                  </Text>
+                  <AppIcon
+                    icon={app.icon}
+                    size={28}
+                  />
+                  <Text
+                    className="mx-3 w-full flex-shrink font-['SpaceGroteskRegular']"
+                    numberOfLines={1}>
+                    {app.appName}
+                  </Text>
+                  <Text
+                    className="font-['SpaceGroteskMedium']"
+                    style={{ color: themeColor }}>
+                    {formatMinutes(secondsToMinutes(app.seconds))}
+                  </Text>
+                </View>
+              )}
+            />
+            {apps.length > SCROLL_HINT_THRESHOLD && (
+              <LinearGradient
+                colors={["transparent", "rgba(0,0,0,0.05)"]}
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 40,
+                }}
+              />
+            )}
+          </View>
+        </Animated.View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

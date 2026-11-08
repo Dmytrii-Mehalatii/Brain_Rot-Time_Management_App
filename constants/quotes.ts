@@ -1,13 +1,8 @@
-type BrainPartType =
-  | "Health and Productivity"
-  | "Social & News"
-  | "Video & Audio"
-  | "Games";
+import type { BrainPartType } from "@/types";
 
-const QUOTES: Record<
-  BrainPartType,
-  { low: string; mid: string; high: string }
-> = {
+type QuoteTiers = { low: string; mid: string; high: string };
+
+const QUOTES: Record<BrainPartType, QuoteTiers> = {
   "Health and Productivity": {
     low: "Your productivity is so low, even your 'to-do' list is on vacation",
     mid: "Moderate focus. You're basically a professional procrastinator who accidentally got something done",
@@ -30,8 +25,8 @@ const QUOTES: Record<
   },
 };
 
-export const getFunnyQuote = (type: BrainPartType, timeMinutes: number) => {
-  if (timeMinutes < 60) return QUOTES[type].low;
-  if (timeMinutes < 180) return QUOTES[type].mid;
+export function getFunnyQuote(type: BrainPartType, minutes: number): string {
+  if (minutes < 60) return QUOTES[type].low;
+  if (minutes < 180) return QUOTES[type].mid;
   return QUOTES[type].high;
-};
+}

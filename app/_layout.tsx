@@ -1,10 +1,9 @@
 import Header from "@/components/Header";
-import BrainMapProvider from "@/hooks/useModal";
-import { UserStreakStatsProvider } from "@/hooks/useStreakStats";
+import { DailyStatsProvider } from "@/hooks/useDailyStats";
+import { ModalProvider } from "@/hooks/useModal";
+import { StreakStatsProvider } from "@/hooks/useStreakStats";
 import { ThemeProvider } from "@/hooks/useTheme";
-import UserAppsProviderType from "@/hooks/useUserAppsType";
-import { UserGenericStatsProvider } from "@/hooks/useUserGenericStats";
-import { UserWeeklyStatsProvider } from "@/hooks/useUserWeeklyStats";
+import { WeeklyStatsProvider } from "@/hooks/useWeeklyStats";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -21,39 +20,30 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <UserGenericStatsProvider>
-          <UserAppsProviderType>
-            <UserWeeklyStatsProvider>
-              <UserStreakStatsProvider>
-                <BrainMapProvider>
-                  <Stack>
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{
-                        headerTitle: () => (
-                          <Header
-                            title="Brain Rot"
-                            brainIcon={true}
-                          />
-                        ),
-                        headerBackVisible: false,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="index"
-                      options={{
-                        headerShown: false,
-                        headerShadowVisible: false,
-                      }}
-                    />
-                  </Stack>
-                </BrainMapProvider>
-              </UserStreakStatsProvider>
-            </UserWeeklyStatsProvider>
-          </UserAppsProviderType>
-        </UserGenericStatsProvider>
-      </ThemeProvider>
+      {/* ThemeProvider derives the rot stage from today's stats, so it sits inside DailyStatsProvider. */}
+      <DailyStatsProvider>
+        <ThemeProvider>
+          <WeeklyStatsProvider>
+            <StreakStatsProvider>
+              <ModalProvider>
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{
+                      headerTitle: () => <Header title="Brain Rot" />,
+                      headerBackVisible: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="index"
+                    options={{ headerShown: false, headerShadowVisible: false }}
+                  />
+                </Stack>
+              </ModalProvider>
+            </StreakStatsProvider>
+          </WeeklyStatsProvider>
+        </ThemeProvider>
+      </DailyStatsProvider>
     </GestureHandlerRootView>
   );
 }

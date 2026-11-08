@@ -1,29 +1,27 @@
+import colors from "@/constants/colors";
 import { useTheme } from "@/hooks/useTheme";
-import { TabTriggerSlotProps } from "expo-router/ui";
-import { cloneElement, ReactElement } from "react";
+import type { TabTriggerSlotProps } from "expo-router/ui";
+import type { ComponentType } from "react";
 import { Pressable } from "react-native";
+import type { SvgProps } from "react-native-svg";
 
-export type TabButtonProps = TabTriggerSlotProps & {
-  children: ReactElement;
+type TabButtonProps = TabTriggerSlotProps & {
+  icon: ComponentType<SvgProps>;
 };
 
-export function TabButton({ children, isFocused, ...props }: TabButtonProps) {
+export function TabButton({ icon: Icon, isFocused, ...props }: TabButtonProps) {
   const { themeColor } = useTheme();
+  const size = isFocused ? 40 : 36;
 
   return (
     <Pressable
       {...props}
-      style={{
-        width: 56,
-        height: 56,
-        alignItems: "center",
-        padding: 10,
-      }}>
-      {cloneElement(children, {
-        fill: isFocused ? themeColor : "#212121",
-        width: isFocused ? 40 : 36,
-        height: isFocused ? 40 : 36,
-      })}
+      style={{ width: 56, height: 56, alignItems: "center", padding: 10 }}>
+      <Icon
+        fill={isFocused ? themeColor : colors.ink}
+        width={size}
+        height={size}
+      />
     </Pressable>
   );
 }

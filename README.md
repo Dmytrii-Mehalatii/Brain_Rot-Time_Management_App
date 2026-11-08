@@ -6,7 +6,7 @@ Instead of boring stats, BrainRot turns your usage into a **living experience** 
 
 ## ✨ Features
 
-### 1 Smart Screen Time Tracking
+### 1. Smart Screen Time Tracking
 
 Track how much time you spend across different apps and categories:
 
@@ -19,7 +19,7 @@ Get detailed **daily and weekly breakdowns** of your usage.
 
 ---
 
-### 2 Dynamic Brain Visualization
+### 2. Dynamic Brain Visualization
 
 Beyond generic usage stats, your behavior is reflected through an **interactive brain map**:
 
@@ -29,7 +29,7 @@ Beyond generic usage stats, your behavior is reflected through an **interactive 
 
 ---
 
-### 3 Insightful Analytics
+### 3. Insightful Analytics
 
 Stay informed with clear and simple stats:
 
@@ -40,7 +40,7 @@ Stay informed with clear and simple stats:
 
 ---
 
-### 4 Focus Streak System
+### 4. Focus Streak System
 
 Build better habits with a streak mechanic:
 
@@ -50,7 +50,7 @@ Build better habits with a streak mechanic:
 
 ---
 
-### 5 “What If?” Time Reclaim Feature
+### 5. “What If?” Time Reclaim Feature
 
 See what your lost time could have been:
 
@@ -64,7 +64,7 @@ Turn wasted hours into **real-world opportunities**.
 
 ---
 
-### 6 Adaptive UI & Mascot
+### 6. Adaptive UI & Mascot
 
 The app’s personality evolves with your behavior:
 
@@ -108,4 +108,8 @@ You can quickly try **BrainRot** on your Android device using the **Expo preview
 >
 > 1. Open **BrainRot**
 > 2. Tap **"Grant Permission"**
-> 3. Navigate to:
+> 3. Navigate to: **Settings → Apps → Special app access → Usage access**
+> 4. Find **BrainRot** in the list and switch **Allow usage access** on
+> 5. Return to the app; it detects the change and opens automatically
+
+Without this permission Android does not expose any app usage data, so every screen stays empty.

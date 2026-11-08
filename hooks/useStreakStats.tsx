@@ -1,97 +1,34 @@
 import UsageStats from "@/modules/usage-stats";
-import {
-  DailyStreakType,
-  PermissionChangedEvent,
-  WeeklyStreakType,
-} from "@/types";
-import { EventEmitter } from "expo-modules-core";
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import type { DailyStreak, WeeklyStreakDay } from "@/types";
+import { createStrictContext } from "@/utils/createStrictContext";
+import type { PropsWithChildren } from "react";
+import { useUsageSnapshot } from "./useUsageSnapshot";
 
-type UserStreakStatsContextType = {
-  dailyStreak: DailyStreakType;
-  weeklyStreak: WeeklyStreakType[];
+type StreakStats = {
+  dailyStreak: DailyStreak;
+  /** Last seven days, oldest first. */
+  weeklyStreak: WeeklyStreakDay[];
 };
 
-const UserStreakStatsContext = createContext<UserStreakStatsContextType | null>(
-  null,
-);
+const [StreakStatsContextProvider, useStreakStats] =
+  createStrictContext<StreakStats>("StreakStatsProvider");
 
-function getUserStreakStats(): UserStreakStatsContextType {
-  const dailyStreak = UsageStats.getDailyStreak();
-  const weeklyStreak = UsageStats.getWeeklyStreak();
-
+function readStreakStats(): StreakStats {
   return {
-    dailyStreak,
-    weeklyStreak,
+    dailyStreak: UsageStats.getDailyStreak(),
+    weeklyStreak: UsageStats.getWeeklyStreak(),
   };
 }
 
-export function UserStreakStatsProvider({ children }: { children: ReactNode }) {
-  const [streak, setStreak] = useState<UserStreakStatsContextType>(() =>
-    getUserStreakStats(),
-  );
+const isEmpty = (stats: StreakStats) => stats.weeklyStreak.length === 0;
 
-  useEffect(() => {
-    const emitter = new EventEmitter(UsageStats);
-
-    const updateWithRetry = () => {
-      let attempts = 0;
-
-      const tryFetch = () => {
-        const next = getUserStreakStats();
-
-        if (next.weeklyStreak.length === 0 && attempts < 3) {
-          attempts++;
-          setTimeout(tryFetch, 50);
-        } else {
-          setStreak((prev) => {
-            if (JSON.stringify(prev) === JSON.stringify(next)) {
-              return prev;
-            }
-            return next;
-          });
-        }
-      };
-
-      tryFetch();
-    };
-
-    const sub = emitter.addListener(
-      "onPermissionChanged",
-      (e: PermissionChangedEvent) => {
-        if (e.granted) {
-          updateWithRetry();
-        }
-      },
-    );
-
-    updateWithRetry();
-
-    return () => sub.remove();
-  }, []);
-
-  const value = useMemo(() => streak, [streak]);
-
+export function StreakStatsProvider({ children }: PropsWithChildren) {
+  const stats = useUsageSnapshot(readStreakStats, isEmpty);
   return (
-    <UserStreakStatsContext.Provider value={value}>
+    <StreakStatsContextProvider value={stats}>
       {children}
-    </UserStreakStatsContext.Provider>
+    </StreakStatsContextProvider>
   );
 }
 
-export default function useStreakStats() {
-  const ctx = useContext(UserStreakStatsContext);
-  if (!ctx) {
-    throw new Error(
-      "useStreakStats must be used within UserStreakStatsProvider",
-    );
-  }
-  return ctx;
-}
+export { useStreakStats };
