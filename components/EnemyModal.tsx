@@ -102,11 +102,11 @@ export default function EnemyModal({
                 </Pressable>
               </View>
 
-              <View className="mt-5 flex-row">
+              <View className="mt-5 flex-row justify-center gap-2">
                 {podium.map((app) => (
                   <View
                     key={app.packageName}
-                    className={`items-center ${isSmall ? "mx-2 w-[80px]" : "w-[108px]"}`}
+                    className="max-w-[108px] flex-1 items-center"
                     style={{ marginTop: app.appIndex === 1 ? 0 : 32 }}>
                     <Text
                       numberOfLines={2}

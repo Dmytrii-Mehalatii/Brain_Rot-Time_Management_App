@@ -95,7 +95,7 @@ export default function BrainMap() {
         })}
       </View>
 
-      <View className="mx-6 mb-4 flex-row justify-between">
+      <View className="mx-6 mb-4 flex-row justify-between gap-3">
         <Button
           title="Brain Info"
           variant="info"
@@ -170,7 +170,7 @@ function Legend() {
       {LEGEND_COLUMNS.map((column, columnIndex) => (
         <View
           key={columnIndex}
-          className="gap-y-3">
+          className="flex-1 gap-y-3">
           {column.map((item) => (
             <View
               key={item.label}
@@ -179,7 +179,7 @@ function Legend() {
                 className={`rounded-md ${item.swatch} ${isSmall ? "h-5 w-5" : "h-7 w-7"}`}
               />
               <Text
-                className={`font-['SpaceGroteskRegular'] text-gray-800 ${isSmall ? "max-w-[80px] text-base leading-5" : "text-md max-w-[92px]"}`}>
+                className={`flex-1 font-['SpaceGroteskRegular'] text-gray-800 ${isSmall ? "text-base leading-5" : "text-md"}`}>
                 {item.label}
               </Text>
             </View>

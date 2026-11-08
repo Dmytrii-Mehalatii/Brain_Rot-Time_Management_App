@@ -14,7 +14,7 @@ const RANK_BORDERS = {
 };
 
 const slotClassName =
-  "flex-1 flex-row items-center h-[50px] px-1 rounded-md border-2";
+  "flex-1 flex-row items-center min-h-[50px] px-1 rounded-md border-2";
 
 /** The top three apps in a fixed row; missing apps show as empty slots. */
 export default function EnemyList({ apps }: { apps: AppUsageStat[] }) {

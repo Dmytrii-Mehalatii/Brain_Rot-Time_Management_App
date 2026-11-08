@@ -1,8 +1,9 @@
 import colors from "@/constants/colors";
+import { useContentWidth } from "@/hooks/useContentWidth";
 import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
 import type { WeeklyDayTime } from "@/types";
 import { formatMinutes } from "@/utils/time";
-import { Text, useWindowDimensions, View } from "react-native";
+import { Text, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
 const BARS = 7;
@@ -20,11 +21,11 @@ export default function WeeklyBarChart({
   days,
   averageMinutes,
 }: WeeklyBarChartProps) {
-  const { width: screenWidth } = useWindowDimensions();
+  const contentWidth = useContentWidth();
   const isSmall = useIsSmallScreen();
 
-  const chartWidth = screenWidth - 80;
-  const barWidth = isSmall ? 30 : 35;
+  const chartWidth = contentWidth - 80;
+  const barWidth = contentWidth < 340 ? 24 : isSmall ? 30 : 35;
   const spacing = (chartWidth - barWidth * BARS) / (BARS + 1);
 
   const data = days.map((day) => ({

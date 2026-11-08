@@ -6,6 +6,7 @@ import EnemyModal from "@/components/EnemyModal";
 import MainImage from "@/components/MainImage";
 import SectionHeading from "@/components/SectionHeading";
 import Streak from "@/components/Streak";
+import { contentColumn } from "@/constants/layout";
 import { useDailyStats } from "@/hooks/useDailyStats";
 import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
 import { useModal } from "@/hooks/useModal";
@@ -41,7 +42,9 @@ export default function Home() {
           className="w-full"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="flex-1 items-center justify-center">
+          <View
+            className="flex-1 items-center justify-center"
+            style={contentColumn}>
             <EnemyModal
               visible={activeModal === "enemies"}
               onClose={closeModal}

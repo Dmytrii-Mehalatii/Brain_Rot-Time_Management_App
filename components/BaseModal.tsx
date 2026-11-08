@@ -21,7 +21,7 @@ export default function BaseModal({
       visible={visible}
       onRequestClose={onClose}>
       <View className="flex-1 items-center justify-center bg-black/20">
-        <View className="relative w-[85%] rounded-2xl border border-black bg-white px-2 pb-10 shadow-lg">
+        <View className="relative w-[85%] max-w-[420px] rounded-2xl border border-black bg-white px-2 pb-10 shadow-lg">
           <Pressable
             onPress={onClose}
             className="absolute right-6 top-6 z-20">

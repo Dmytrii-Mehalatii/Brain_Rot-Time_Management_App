@@ -4,6 +4,7 @@ import EnemyModal from "@/components/EnemyModal";
 import ScreenTimeShareChart from "@/components/ScreenTimeShareChart";
 import SectionHeading from "@/components/SectionHeading";
 import WeeklyBarChart from "@/components/WeeklyBarChart";
+import { contentColumn } from "@/constants/layout";
 import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
 import { useModal } from "@/hooks/useModal";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
@@ -35,7 +36,7 @@ export default function Stats() {
       }}>
       <GestureDetector gesture={gesture}>
         <Animated.View
-          style={animatedStyle}
+          style={[animatedStyle, contentColumn]}
           className={`flex-1 ${isSmall ? "px-8" : "px-12"}`}>
           <EnemyModal
             visible={activeModal === "weeklyEnemies"}

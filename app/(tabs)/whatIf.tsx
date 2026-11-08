@@ -1,5 +1,6 @@
 import CardGroup from "@/components/CardGroup";
 import Divider from "@/components/Divider";
+import { contentColumn } from "@/constants/layout";
 import { WHAT_IF_GROUPS } from "@/constants/whatIfCards";
 import { useDailyStats } from "@/hooks/useDailyStats";
 import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
@@ -21,7 +22,7 @@ export default function WhatIf() {
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View
-        style={animatedStyle}
+        style={[animatedStyle, contentColumn]}
         className={`mt-8 flex-1 items-center gap-3 ${isSmall ? "px-8" : "px-12"}`}>
         <Text
           className={`font-['SpaceGroteskMedium'] uppercase ${isSmall ? "text-[22px]" : "text-[24px]"}`}>

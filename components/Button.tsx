@@ -10,7 +10,7 @@ type ButtonProps = {
 };
 
 const CONTAINER = {
-  info: "border-2 border-primary-500 w-[120px] h-10",
+  info: "border-2 border-primary-500 min-h-10 flex-1 max-w-[120px]",
   primary: "bg-primary-500 px-8 py-4 border-[1.5px] border-primary-800",
 };
 
