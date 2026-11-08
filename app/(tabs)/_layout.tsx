@@ -12,6 +12,8 @@ const TABS = [
   { name: "whatIf", href: "/whatIf", icon: OverviewIcon },
 ] as const;
 
+const TAB_GAP = 48;
+
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const { themeColor } = useTheme();
@@ -20,9 +22,13 @@ export default function TabsLayout() {
     <Tabs>
       <TabSlot />
 
+      {/* TabList is not NativeWind-aware, so its layout has to be plain style. */}
       <TabList
-        className="items-center justify-center gap-14 border-t"
         style={{
+          justifyContent: "center",
+          alignItems: "center",
+          gap: TAB_GAP,
+          borderTopWidth: 1,
           borderTopColor: themeColor,
           paddingBottom: insets.bottom,
           height: 60 + insets.bottom,

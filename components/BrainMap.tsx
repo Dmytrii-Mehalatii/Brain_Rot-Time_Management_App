@@ -19,7 +19,7 @@ type Region = {
 };
 
 const REGIONS: Region[] = [
-  { key: "top", type: "Health and Productivity", top: 64, svgHeight: "90%" },
+  { key: "top", type: "Health and Productivity", top: 56, svgHeight: "90%" },
   { key: "middleTop", type: "Social & News", top: 110, svgHeight: "100%" },
   { key: "middleBottom", type: "Video & Audio", top: 160, svgHeight: "104%" },
   { key: "bottom", type: "Games", top: 200, svgHeight: "150%" },
